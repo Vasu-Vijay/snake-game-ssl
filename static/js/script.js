@@ -191,6 +191,7 @@ function drawFruit(myState, id, pos_x, pos_y) { //draws a fruits[id] at x, y coo
         console.error("Invalid fruit coordinates!");
         return;
     }
+    drawBackground(myState, pos_x, pos_y);
     let fruit = fruits[id];
     let image_path = fruit.sprite;
     let [canvas_x, canvas_y] = myState.gtoc(pos_x, pos_y);
@@ -229,7 +230,7 @@ function updateCanvas(myState) {
         drawBackground(myState, myState.snake.prevTail.x, myState.snake.prevTail.y);
     }
     drawSnake(myState);
-    myState.food.forEach((fruit) => { //TODO: refine so that same fruit not drawn twice
+    myState.food.forEach((fruit) => {
         drawFruit(myState, fruit.id, fruit.x, fruit.y);
     });
 }
