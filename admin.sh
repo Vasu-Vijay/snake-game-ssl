@@ -4,7 +4,7 @@
 #Specified Current User/Users being analysed.
 user=all 
 #Different type of operations that can be performed from menu.
-operation=("Query_User" "Recent_Score" "Analytics" "Delete_Entries" "Log_Rotation" "Specific_View" "Exit")
+operation=("Query_User" "Recent_Score" "Analytics" "Delete_Entries" "Log_Rotation" "Restore_Logs" "Specific_View" "Exit")
 
 #To be used to store all users in history.txt
 function update_userlist(){
@@ -31,6 +31,14 @@ function valid_user(){
     fi
 }
 
+#To be used to validate timestamp
+function Validate_Timestamp(){
+    if date -d "$*" "+%Y-%m-%d %H:%M:%S" >/dev/null 2>&1 ; then
+        return 0
+    else 
+        return -1
+    fi
+}
 #Used to display Menu in a tabluar form which is compatible with size of terminal
 function tabular_display(){
     COLS=3 
@@ -120,7 +128,7 @@ function tabular_display(){
 #Displays menu with selectable operations on terminal.
 function menu_display(){
     while true; do
-        options=("1] Query about a Specific User" "2] View scores of recent games" "3] View Analytics" "4] Delete Entries" "5] Log Rotation" "6] Specific View" "7] Exit")
+        options=("1] Query about a Specific User" "2] View scores of recent games" "3] View Analytics" "4] Delete Entries" "5] Log Rotation" "6] Restore Logs" "7] Specific View" "8] Exit")
         tabular_display
         read -p $'\e[33mEnter command : \e[0m' command #bash does not interpret escaping inside "" but understands it in $''
 
@@ -188,6 +196,12 @@ function Log_Rotation(){
     
     printf "\033c"
     printf "\e[32mLogs have been backed up\e[0m\n"
+}
+
+#Restore previous log files
+function Restore_Logs(){
+    [ ! -f "history.tar.gz" ] && printf "\033c" && printf "\e[31mNo Stored Logs Found\e[0m\n"
+    [ -f "history.tar.gz" ] && tar -xzf "history.tar.gz" && printf "\033c" && printf "\e[32mRestored Logs\e[0m\n"     
 }
 
 #View the logs sorted based on specific filters(time stamp as default.)
@@ -310,6 +324,7 @@ function Delete_Entries(){
     done
 
     if [[ "$method" == $'\x1b' || "$method" == "q" ]] ;then #"\x1b" does not work as it is interpreted as string. So use $' ' to interpret backslash characters
+        printf "\033c"
         menu_display
     elif [[ $method == 1 ]] ; then 
         read -p $'\e[33mSpecify a User : \e[0m' player
@@ -328,11 +343,12 @@ function Delete_Entries(){
             printf "\e[32mhistory.txt has been updated\e[0m\n"
             update_userlist
         else 
+            printf "\033c"
             menu_display
         fi
     elif [[ $method == 2 ]]; then
         read -p $'\e[33mEnter time stamp in format ( YYYY-MM-DD HH:MM:SS ) - \e[0m' timestamp
-        if Validate_Timestamp $timestamp ; then 
+        if Validate_Timestamp "$timestamp" ; then 
             read -p $'\e[33mDo you want to delete entries after the timestamp or before (1/2) - \e[0m' option
             if [[ $option == 1 ]]; then
                 read -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
@@ -350,6 +366,7 @@ function Delete_Entries(){
                     update_userlist
                     printf "\033c"
                 else 
+                    printf "\033c"
                     menu_display
                 fi
             elif [[ $option == 2 ]]; then
@@ -368,10 +385,15 @@ function Delete_Entries(){
                     update_userlist
                     printf "\033c"
                 else
+                    printf "\033c"
                     menu_display
                 fi
+            else
+                printf "\033c"
+                printf "\e[31mInvalid Command\e[0m\n"
             fi
         else 
+            printf "\033c"
             printf "\e[31mInvalid Timestamp\e[0m\n"
         fi
     #Does not verify If date is correct or not 
@@ -383,6 +405,7 @@ function Delete_Entries(){
             }
         }' history.txt > history.tmp
         mv history.tmp history.txt
+        printf "\e[32mNo misformated Records Remains\e[0m\n"
     fi
 }
 
