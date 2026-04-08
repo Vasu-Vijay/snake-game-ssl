@@ -321,7 +321,7 @@ function setupInput(myState, myGame) {
         }
         myState.input = keys[event.key];
         if(myState.input) {
-            if(myState.isPaused == true) {
+            if(myState.isPaused == true && myState.isEnded == false) {
                 myState.isPaused = false;
                 startGameLoop(myState, myGame);
             }
@@ -356,6 +356,7 @@ function consumeFruitAt(myState, x, y) {
 }
 
 function deleteFruit(myState, x, y) {
+    myState.grid[x][y] = new Cell("empty", null);
     const idx = myState.food.findIndex(f => f.x === x && f.y === y )
     if (idx !== -1) {
         myState.food.splice(idx, 1)
