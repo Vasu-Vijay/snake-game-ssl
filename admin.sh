@@ -193,20 +193,38 @@ function Log_Rotation(){
 #View the logs sorted based on specific filters(time stamp as default.)
 function Specific_View(){
     printf "\033c"
-    printf "Select a specific feture to filter\n"
-    printf "1] User\n"
-    printf "2] Time survived\n"
-    printf "3] Score\n"
-    printf "4] Time Stamp (Default)\n"
-    read -sn 1 key
-    if [[ "$key" == '1' ]];then {
-        read -p "Enter the specific user : " sp_user
-        awk -v sp_user="$sp_user" -F "," '
-            {if( "$2" == sp_user ){
-                print $0
-            }}
-        ' history.txt | less
-    } elif [[ "$key" == '2' ]];then {
+
+    while true; do 
+        options=("1] User" "2] Time survived" "3] Score")
+        tabular_display
+        read -n 1 -p $'\e[33mSelect a specific feture to filter : \e[0m' key
+        printf "\n"
+        if valid_command 3 $key; then
+            break
+        else 
+            printf "\033c" 
+            printf "\e[31mPlease enter a valid Command\e[0m\n"
+        fi
+    done
+
+    if [[ "$key" == '1' ]];then 
+        while true;do
+        read -p $'\e[33mEnter the specific user : \e[0m' sp_user
+            if valid_user "$sp_user" ; then 
+                if [[ $sp_user == "q" || $sp_user == $'\x1b' ]]; then
+                    Specific_View
+                elif [[ $user_list =~ ":$sp_user:" || "$user" == "all" ]]; then
+                    #"$2" == sp_user does not work as inside "" $2 is considered as a literal string
+                    awk -v sp_user="$sp_user" -F "," '
+                        {if( $2 == sp_user ){             
+                            print $0
+                        }}
+                    ' history.txt | less
+                    break
+                fi
+            fi
+        done
+    elif [[ "$key" == '2' ]];then {
         sort -rnt "," -k 5 history.txt | less
     } elif [[ "$key" == '3' ]];then {
         sort -rnt "," -k 3,3 history.txt | less
@@ -214,8 +232,10 @@ function Specific_View(){
         menu_display
     } else {
         sort -rt "," -k 1 history.txt | less
-    } fi     
-}   
+    } fi 
+
+    printf "\033c"
+}  
 
 #Analyse the data of players of all games
 function Analytics(){
@@ -366,6 +386,8 @@ function Delete_Entries(){
     fi
 }
 
+update_userlist
+printf "\033c"
 #Display menu untill not exited
 while true; do
     menu_display
