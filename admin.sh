@@ -90,12 +90,68 @@ function Specific_View(){
         sort -rnt "," -k 5 history.txt | less
     } elif [[ "$key" == '3' ]];then {
         sort -rnt "," -k 3,3 history.txt | less
-    } elif [[ "$key" == 'q' || "$key" == "\x1b" ]];then {
+    } elif [[ "$key" == 'q' || "$key" == $'\x1b' ]];then {
         menu_display
     } else {
         sort -rt "," -k 1 history.txt | less
     } fi     
 }   
+
+#Analyse the data of players of all games
+function Analytics(){
+    printf "\033c"  
+    if [[ $user != "all" ]]; then
+        awk -F "," -v user="$user" '{
+            if($2 == user){
+                print $0
+            }
+        }' history.txt > history.tmp #created a history.tmp file to be used to read only specific users
+    else 
+        cp history.txt history.tmp #created a history.tmp file to match above format if all users are to be analysed
+    fi
+    #Showing Analysis of Games of the users
+    sort -t "," -k 2 history.tmp | awk -F "," '
+                {   
+                    if(NR == 1){ 
+                        if($0 ~ /^$/){
+                            printf "No Records in history.txt"
+                        } else {
+                            printf "User ,  Avg_Score ,  Avg_Time_Survived ,  Min_Score ,  Max_Score\n"
+                            cur_user=$2 ; score=$3 ; time=$5 ; death[$4]=1 ; min_score=score ; max_score=score ; games=1 ; min_score_detail=$0 ; max_score_detail=$0;
+                        }
+                    }
+                    else if (cur_user != $2){
+                        printf cur_user " ,\t"   score/games "  ,\t" time/games " ,\t" min_score " ,\t" max_score "\n"
+                        printf "\t min_score : " min_score_detail "\n"
+                        printf "\t max_score : " max_score_detail "\n"
+                        printf "\n";
+                        cur_user=$2
+                        for (i in death){
+                            death[i]=0
+                        }
+                        
+                        score=$3 ; time=$5 ; death[$4]=1 ; min_score=score ; max_score=score ; games=1 ; min_score_detail=$0 ; max_score_detail=$0 ;
+                    } else {
+                        score+=$3 ; time+=$5 ; death[$4]+=1 ; games+=1 ;
+                        if(min_score > $3) {
+                            min_score=$3
+                            min_score_detail=$0
+                        }
+                        if(max_score < $3) {
+                            max_score=$3
+                            max_score_detail=$0
+                        }
+                    }
+                }
+                END {
+                    printf cur_user " , " score/games " , " time/games " , " min_score " , " max_score "\n"
+                    printf "\t min_score : " min_score_detail "\n"
+                    printf "\t max_score : " max_score_detail "\n"
+                } 
+            ' | less
+    rm history.tmp #remove temporary file created
+}
+
 
 #Delete Entries from history.txt
 function Delete_Entries(){
@@ -103,10 +159,10 @@ function Delete_Entries(){
     printf "Choose a method to delete\n"
     printf "1] Specific User\n"
     printf "2] Timestamp\n"
-#    printf "3] Misformatted Records\n"
+    printf "3] Misformatted Records\n"
     read method
     
-    if [[ $method == 1 ]] ; then 
+    if [[ $method == 1 ]] ; then #Delete Entries based on User 
         read -p "Specify a User : " player 
         read -p "Are you sure you want to delete these entries?(y/n)" confirmation
         if [[ $confirmation == "y" ]]; then
@@ -122,7 +178,7 @@ function Delete_Entries(){
         else 
             menu_display
         fi
-    elif [[ $method == 2 ]]; then
+    elif [[ $method == 2 ]]; then #Delete entries Based on timestamp
         read -p "Enter time stamp in format YYYY-MM-DD HH:MM:SS" timestamp
         if date -d "$timestamp" "+%Y-%m-%d %H:%M:%S" >/dev/null 2>&1 ; then 
             read -p "Do you want to delete entries after the timestamp or before (1/2)" option
@@ -158,13 +214,14 @@ function Delete_Entries(){
                 fi
             fi
         fi
-#To Do implement mismatch record deletion
-
-    # elif [[ $method == 3 ]]; then
-    #     awk -F "," -v format=$format '{
-    #         if ($0 =~ format) {print $0}
-    #     }' history.txt > history.tmp
-    #     mv history.tmp history.txt
+    elif [[ $method == 3 ]]; then #Delete Entries if they do not match format
+        awk -F "," '{
+            if ($0 ~ /^\[[0-9]+-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\],[^,]+,[0-9]+,[A-Z]+,[0-9]+$/) {
+                if ($4 !~ /(WALL|SELF)/){}
+                else {print $0}
+            }
+        }' history.txt > history.tmp
+        mv history.tmp history.txt
     fi
 }
 
