@@ -14,8 +14,6 @@ const REFRESH_RATE = 200;
 
 let username = prompt("Enter your username: ", "guest_user");
 
-const images = ['../static/sprites/fruits/three_carrots.png', '../static/sprites/fruits/carrot.png', '../static/sprites/fruits/golden_apple.png', '../static/sprites/classic/tail_down.png', '../static/sprites/classic/head_left.png', '../static/sprites/classic/tail_up.png', '../static/sprites/classic/head_down.png', '../static/sprites/classic/body_bottomleft.png', '../static/sprites/classic/head_right.png', '../static/sprites/classic/head_up.png', '../static/sprites/classic/body_vertical.png', '../static/sprites/classic/tail_left.png', '../static/sprites/classic/body_topright.png', '../static/sprites/classic/tail_right.png', '../static/sprites/classic/body_horizontal.png', '../static/sprites/classic/body_bottomright.png', '../static/sprites/classic/body_topleft.png']
-
 const image_elems={} //dict containing <image_path>:<html img elem> pairs
 
 const turn_images=[["body_topleft.png","body_bottomleft.png"],     //-1,-1   -1,+1     {del_x, del_y values}
