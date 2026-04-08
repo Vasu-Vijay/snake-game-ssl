@@ -57,30 +57,6 @@ class GameState {
     }
 }
 
-class Game {
-    constructor() {
-
-    }
-
-    pauseGame() {}
-
-    initGame(myState) {
-        drawBoard(myState);
-        spawnFruit(myState);
-        updateCanvas(myState);
-        startGameLoop(myState, this); //TODO: change later
-    }
-
-    gameLoop(myState) {
-        //console.log(myState);
-        updateState(myState);
-        updateCanvas(myState);
-        if(!myState.isPaused) {
-            setTimeout(() => this.gameLoop(myState), myState.refreshRate)
-        }
-    }
-}
-
 class Snake {
     constructor(myState) {
         this.body = [
@@ -325,12 +301,11 @@ function initGameState() {
     myState.startTime = new Date();
     myState.grid[2][1] = new Cell("snake_head", myState.snake.head);
     myState.grid[1][1] = new Cell("snake_tail", myState.snake.tail);
-    const myGame = new Game();
-    setupInput(myState, myGame);
-    myGame.initGame(myState);
+    setupInput(myState);
+    initGame(myState);
 }
 
-function setupInput(myState, myGame) {
+function setupInput(myState) {
     document.addEventListener("keydown", (event) => { // event listeners for keydowns, stores the dir vector in move
         const keys = {
             ArrowUp: { x: 0, y: -1},
@@ -342,7 +317,7 @@ function setupInput(myState, myGame) {
         if(myState.input) {
             if(myState.isPaused == true && myState.isEnded == false) {
                 myState.isPaused = false;
-                startGameLoop(myState, myGame);
+                startGameLoop(myState);
             }
         }
         
@@ -352,9 +327,9 @@ function setupInput(myState, myGame) {
     });
 }
 
-function startGameLoop(myState, myGame) {
+function startGameLoop(myState) {
     if(myState.isPaused) { return; }
-    myGame.gameLoop(myState);
+    gameLoop(myState);
 }
 
 function consumeFruitAt(myState, x, y) {
@@ -439,5 +414,20 @@ function ateGoldenApple(fruit, myState) {
     myState.snake.immunityTime += IMMUNITY_TIME;
 }
 
+function initGame(myState) {
+    drawBoard(myState);
+    spawnFruit(myState);
+    updateCanvas(myState);
+    startGameLoop(myState); //TODO: change later
+}
+
+function gameLoop(myState) {
+    //console.log(myState);
+    updateState(myState);
+    updateCanvas(myState);
+    if(!myState.isPaused) {
+        setTimeout(() => gameLoop(myState), myState.refreshRate)
+    }
+}
 
 start();
