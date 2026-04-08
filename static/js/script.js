@@ -200,8 +200,9 @@ function spawnFruit(myState) { //decides a random fruit and a random empty coord
         }
     }
 
+    let [next_x, next_y] = myState.snake.nextPos(myState)
     let pos_x = Math.floor(Math.random() * myState.nColumns), pos_y = Math.floor(Math.random() * myState.nRows);
-    while(pos_x == myState.nColumns || pos_y == myState.nRows || myState.grid[pos_x][pos_y].entity != null) {
+    while(pos_x == myState.nColumns || pos_y == myState.nRows || myState.grid[pos_x][pos_y].entity != null || (pos_x == next_x && pos_y == next_y)) {
         pos_x = Math.floor(Math.random() * myState.nColumns), pos_y = Math.floor(Math.random() * myState.nRows);
     }
 
