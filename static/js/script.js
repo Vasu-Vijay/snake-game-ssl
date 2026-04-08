@@ -321,7 +321,7 @@ function setupInput(myState, myGame) {
         }
         myState.input = keys[event.key];
         if(myState.input) {
-            if(myState.isPaused == true) {
+            if(myState.isPaused == true && myState.isEnded == false) {
                 myState.isPaused = false;
                 startGameLoop(myState, myGame);
             }
