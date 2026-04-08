@@ -229,11 +229,12 @@ function getDirString(dirX, dirY) { // give the dir name for the dir vector
 }
 
 function updateDir(myState){ //changes dir variable according to the last key pressed
+    myState.snake.prevdir.x = myState.snake.dir.x;
+    myState.snake.prevdir.y = myState.snake.dir.y;
+    
     if (!myState.input || (getDirString(myState.snake.dir.x, myState.snake.dir.y) == getDirString(-myState.input.x, -myState.input.y))) { 
         return; 
     }
-    myState.snake.prevdir.x = myState.snake.dir.x;
-    myState.snake.prevdir.y = myState.snake.dir.y;
 
     myState.snake.dir.x = myState.input.x;
     myState.snake.dir.y = myState.input.y;
