@@ -1,7 +1,7 @@
 const fruits = {
-    "carrot": {name:"Carrot", score:1, sprite: "../static/sprites/fruits/carrot.png", rel_probability:1, on_eat: ateCarrot},
-    "triplecarrot": {name:"Triple Carrot", score:3, sprite:"../static/sprites/fruits/three_carrots.png", rel_probability:1, on_eat: atePumpPie}, //TODO: image to be replaced, probability to be written
-    "goldenapple": {name:"Golden Apple", score:0, sprite:"../static/sprites/fruits/golden_apple.png", rel_probability:0, on_eat: ateGoldenApple} //TODO: image to be made, also fix probability
+    "carrot": {name:"Carrot", score:1, sprite: "../static/sprites/fruits/carrot.png", rel_probability: 1, onEat: ateCarrots},
+    "triplecarrot": {name:"Triple Carrot", score:3, sprite:"../static/sprites/fruits/three_carrots.png", rel_probability: 1, onEat: ateCarrots}, //TODO: image to be replaced, probability to be written
+    "goldenapple": {name:"Golden Apple", score:0, sprite:"../static/sprites/fruits/golden_apple.png", rel_probability: 1, onEat: ateGoldenApple} //TODO: image to be made, also fix probability
 }
 
 const snake_sprites=["../static/sprites/classic/", "../static/sprites/cyberpunk/"]
@@ -48,6 +48,8 @@ class GameState {
 
         this.food = [];
         this.fruitsUsed = ["carrot", "triplecarrot", "goldenapple"];
+
+        this.startTime = new Date();
     }
 
     gtoc(x, y) { // convert grid's x,y coords to absolute x,y coords of the canvas, to keep board in center
@@ -109,8 +111,15 @@ class Snake {
     get tail() {
         return this.body[this.length - 1];
     }
-    get nextPos() {
-        return [this.head.x + this.dir.x, this.head.y + this.dir.y];
+    
+    nextPos(myState) {
+        let next_x = this.head.x + this.dir.x;
+        let next_y = this.head.y + this.dir.y;
+        if(this.isImmune) {
+            next_x = next_x < 0 ? (next_x % myState.nColumns + myState.nColumns) : (next_x % myState.nColumns);
+            next_y = next_y < 0 ? (next_y % myState.nRows + myState.nRows) : (next_y % myState.nRows);
+        }
+        return [next_x, next_y];
     }
 }
 
@@ -243,14 +252,14 @@ function updateCanvas(myState) {
         drawBackground(myState, myState.snake.prevTail.x, myState.snake.prevTail.y);
     }
     drawSnake(myState);
-    myState.food.forEach((fruit) => {
+    myState.food.forEach((fruit) => { //TODO: refine so that same fruit not drawn twice
         drawFruit(myState, fruit.id, fruit.x, fruit.y);
     });
 }
 
 function getDeathCause(myState) { // check death according to current pos and dir
     let causeOfDeath = undefined;
-    let [next_x, next_y] = myState.snake.nextPos;
+    let [next_x, next_y] = myState.snake.nextPos(myState);
     if(next_x >=myState.nColumns || next_x <0 || next_y>=myState.nRows || next_y<0) { causeOfDeath = "WALL"; }
     else if(myState.grid[next_x][next_y].type == "snake_body" || (!myState.snake.tailChanged && myState.grid[next_x][next_y].type == "snake_tail")) { causeOfDeath = "SELF"; }
     console.log(causeOfDeath);
@@ -266,17 +275,20 @@ function executeFuneral(myState, cause) { // perform actions reqd after game end
 function updateState(myState) {
     updateDir(myState);
 
-    let [next_x, next_y] = myState.snake.nextPos;
+    let [next_x, next_y] = myState.snake.nextPos(myState);
     myState.snake.growthBuffer += consumeFruitAt(myState, next_x, next_y);
 
     myState.snake.tailChanged = myState.snake.growthBuffer <= 0;
 
-    let cause = getDeathCause(myState);
-    if(cause) {
-        executeFuneral(myState, cause);
-        //TODO: add relevant death animations!!!
-        return;
+    if(!myState.snake.isImmune) {
+        let cause = getDeathCause(myState);
+        if(cause) {
+            executeFuneral(myState, cause);
+            //TODO: add relevant death animations!!!
+            return;
+        }
     }
+
     if (myState.snake.growthBuffer == 0) {      // move head and tail both
         updateTail(myState);
         updateHead(myState);
@@ -287,6 +299,11 @@ function updateState(myState) {
         updateTail(myState);
         myState.snake.growthBuffer += 1;
     }
+
+    if(myState.snake.immunityTime > 0) {
+        myState.snake.immunityTime -= myState.refreshRate; //TODO: refine this if needed like in old code
+    }
+    console.log(myState.snake.immunityTime);    
 
     // if(myState.food.length == 0) {
     //     spawnFruit();
@@ -304,6 +321,7 @@ function start() {
 
 function initGameState() {
     const myState = new GameState();
+    myState.startTime = new Date();
     myState.grid[2][1] = new Cell("snake_head", myState.snake.head);
     myState.grid[1][1] = new Cell("snake_tail", myState.snake.tail);
     const myGame = new Game();
@@ -326,7 +344,6 @@ function setupInput(myState, myGame) {
                 startGameLoop(myState, myGame);
             }
         }
-
         
         // if(event.key=="p") { //TODO: furnish this
         //     pauseGame();
@@ -346,7 +363,7 @@ function consumeFruitAt(myState, x, y) {
     } //TODO: add similar exhaustive checks at all places
     if(myState.grid[x][y].type == "fruit") {
         let fruit=myState.grid[x][y].entity;
-        fruit.on_eat();
+        fruit.onEat(fruit, myState);
         deleteFruit(myState, x, y);
         spawnFruit(myState);
         return fruit.score;
@@ -364,12 +381,7 @@ function deleteFruit(myState, x, y) {
 }
 
 function updateHead(myState){ // updates the sprite of new head and the next element according to direction of motion
-    let [next_x, next_y] = myState.snake.nextPos;
-
-    if(myState.isImmune) {
-        next_x = next_x < 0 ? (next_x % myState.nColumns + myState.nColumns) : (next_x % myState.nColumns);
-        next_y = next_y < 0 ? (next_y % myState.nRows + myState.nRows) : (next_y % myState.nRows);
-    }
+    let [next_x, next_y] = myState.snake.nextPos(myState);
 
     myState.snake.body.unshift({x: next_x, y: next_y, sprite:`head_${getDirString(myState.snake.dir.x, myState.snake.dir.y)}.png`}) // add new head to snake[]
     myState.grid[next_x][next_y] = new Cell("snake_head", myState.snake.head);
@@ -419,9 +431,12 @@ function updateTail(myState){ // updates the sprite of the new tail and paints b
     myState.snake.body.pop(); //delete the old tail
 }
 
-function ateCarrot() {}
-function atePumpPie() {} //TOOD: why??
-function ateGoldenApple() {}
+function ateCarrots(fruit, myState) {
+    let nCarrots = fruit.score;
+}
+function ateGoldenApple(fruit, myState) {
+    myState.snake.immunityTime += IMMUNITY_TIME;
+}
 
 
 start();
