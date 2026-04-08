@@ -6,6 +6,11 @@ user=all
 #Different type of operations that can be performed from menu.
 operation=("Query_User" "Recent_Score" "Analytics" "Delete_Entries" "Log_Rotation" "Specific_View" "Exit")
 
+#To be used to store all users in history.txt
+function update_userlist(){
+    user_list=":$(cut -d',' -f2 history.txt | sort -u | tr '\n' ':' )"
+}
+
 #To be used to validate if command entered is correct or not
 function valid_command(){
     if [[ "$2" =~ ^[1-$1]$ || $2 == "q" || $2 == "\x1b" ]]; then 
@@ -13,6 +18,17 @@ function valid_command(){
     else 
         return -1
     fi 
+}
+
+#To be used to validate if user has input valid user or not
+function valid_user(){
+    if [[ "$1" == "q" || "$1" == $'\x1b' || $user_list =~ ":$1:" || "$1" == "all" ]]; then
+        return 0
+    else 
+        printf "\033c"
+        printf "\e[31mPlease enter a valid Username / all\e[0m\n"
+        return -1
+    fi
 }
 
 #Used to display Menu in a tabluar form which is compatible with size of terminal
@@ -126,14 +142,25 @@ function Exit(){
 
 #Specifying user to be analysed
 function Query_User(){
-    read -p "Enter Username : " user
+    
+    while true; do
+    read -p $'\e[33mEnter Username : \e[0m' user
+        if valid_user "$user" ; then 
 
+            if [[ $user == "q" || $user == $'\x1b' ]]; then
+                menu_display
+            elif [[ $user_list =~ ":$user:" || "$user" == "all" ]]; then
+                break
+            fi
+        fi
+    done
+    printf "\033c"
     if [[ "$user" == "all" ]]; then {
-        printf "All Users Will be Queried\n" 
+        printf "\e[32mAll Users Will be Queried\e[0m\n" 
     }
     else {
-        printf "$user will be Queried\n"
-    }
+        printf "\e[32m$user Will be Queried\e[0m\n"
+        }
     fi
 }
 
@@ -155,12 +182,12 @@ function Recent_Score(){
 
 #Perform Log Rotation by saving last 10 entries of history.txt
 function Log_Rotation(){
-    head -10 history.txt > history.tmp
+    tail -10 history.txt > history.tmp
     tar -czf history.tar.gz history.txt
     mv history.tmp history.txt
     
     printf "\033c"
-    printf "Logs have been backed up\n"
+    printf "\e[32mLogs have been backed up\e[0m\n"
 }
 
 #View the logs sorted based on specific filters(time stamp as default.)
