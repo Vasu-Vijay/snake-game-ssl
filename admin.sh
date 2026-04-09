@@ -32,6 +32,7 @@ function valid_user(){
 }
 
 #To be used to validate timestamp
+#TODO : Handle Edge Case like letters
 function Validate_Timestamp(){
     if date -d "$*" "+%Y-%m-%d %H:%M:%S" >/dev/null 2>&1 ; then
         return 0

@@ -1,2 +1,4 @@
 *.tmp
 tmp/
+history.txt
+static/js/data.js
