@@ -236,10 +236,16 @@ function updateCanvas(myState) {
 function getDeathCause(myState) { // check death according to current pos and dir
     let causeOfDeath = undefined;
     let [next_x, next_y] = myState.snake.nextPos(myState);
-    let cells = myState.grid[next_x][next_y];
-    console.log(cells)
-    if(next_x >=myState.nColumns || next_x <0 || next_y>=myState.nRows || next_y<0) { causeOfDeath = "WALL"; }
-    else if(cells.length!=0 && (cells[cells.length-1].type == "snake_body" || (!myState.snake.tailChanged && cells[0].type == "snake_tail"))) { causeOfDeath = "SELF"; }
+    if(next_x >=myState.nColumns || next_x <0 || next_y>=myState.nRows || next_y<0) { 
+        causeOfDeath = "WALL"; 
+    } else {
+        let cells = myState.grid[next_x][next_y];
+        console.log(cells);
+
+        if(cells.length!=0 && (cells[cells.length-1].type == "snake_body" || (!myState.snake.tailChanged && cells[0].type == "snake_tail"))) { 
+            causeOfDeath = "SELF"; 
+        }
+    }
     console.log(causeOfDeath);
     return causeOfDeath;
 }
