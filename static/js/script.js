@@ -23,9 +23,45 @@ class User {
         this.records = [];
     }
 
-    addRecord(record) {}
+    addRecord(record) {
+        if(!((record.startTime) && (record.score && record.score>=2) && (record.cause && ["SELF", "WALL"].includes(record.cause)) && (record.timeAlive && record.timeAlive > 0))) {
+            console.error("Invalid record pushed!");
+            return;
+        }
+        this.records.push(record);
+    }
 
-    saveLatestRecord() {}
+    saveLatestRecord() {
+        let record = this.records[this.records.length - 1];
+
+        let data = new FormData();
+        data.append("start_time", record.startTime);
+        data.append("username", this.username);
+        data.append("score", record.score); //TODO: add more stuff to the data var to send
+        data.append("cause", record.cause);
+        data.append("time_alive", record.timeAlive);
+
+        fetch("/save_score", { //DOUBT: whats fetch functon tho??/?
+            "method": "POST",
+            "body": data,
+        }).then(function (response){
+            if(!response.ok) {
+                console.error("HTTP error: ", response);
+                return null;
+            }
+            return response.text();
+        }).then(function (data){
+            if(data) {
+                if(data=="ok") {
+                    console.log("Saved successfully!");
+                } else {
+                    console.error(data);
+                }
+            }
+        }).catch(function (error) {
+            console.error(error); //TODO: check if better error handling possible
+        });
+    }
 }
 
 const username = prompt("Enter your username: ", "guest_user");
@@ -60,8 +96,6 @@ class GameState {
 
         this.food = [];
         this.fruitsUsed = ["carrot", "triplecarrot", "goldenapple"];
-
-        this.startTime = new Date();
     }
 
     gtoc(x, y) { // convert grid's x,y coords to absolute x,y coords of the canvas, to keep board in center
@@ -267,7 +301,13 @@ function executeFuneral(myState, cause) { // perform actions reqd after game end
     myState.isPaused = true; //???
     myState.deathTime = +new Date();
 
-    user.addRecord({});
+    let st = myState.startTime;
+    let timeAlive = myState.deathTime - myState.startTime;
+
+    let pad = (n) => String(n).padStart(2, '0');
+    let formattedStartTime = `[${st.getFullYear()}-${pad(st.getMonth()+1)}-${pad(st.getDate())} ${pad(st.getHours())}:${pad(st.getMinutes())}:${pad(st.getSeconds())}]`;
+
+    user.addRecord({"startTime": formattedStartTime, "score": myState.snake.length, "cause": cause, "timeAlive": timeAlive});
     user.saveLatestRecord();
 
     document.getElementById("score").innerText=myState.snake.length;
@@ -325,7 +365,6 @@ function start() {
 
 function initGameState() {
     const myState = new GameState();
-    myState.startTime = new Date();
     myState.grid[2][1].push(new Cell("snake_head", myState.snake.head));
     myState.grid[1][1].push(new Cell("snake_tail", myState.snake.tail));
     setupInput(myState);
@@ -356,6 +395,7 @@ function setupInput(myState) {
 
 function startGameLoop(myState) {
     if(myState.isPaused) { return; }
+    myState.startTime = new Date();
     gameLoop(myState);
 }
 
