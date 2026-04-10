@@ -1,0 +1,14 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#game {
+    border: 2px solid;
+    display: none;
+}
+
+.retry {
+    display: none;
+}

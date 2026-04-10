@@ -12,7 +12,7 @@ const CANVAS_HEIGHT = 450;
 const CANVAS_WIDTH = 450;
 const REFRESH_RATE = 200;
 
-let username = prompt("Enter your username: ", "guest_user");
+// let username = prompt("Enter your username: ", "guest_user");
 
 const image_elems={} //dict containing <image_path>:<html img elem> pairs
 
@@ -247,7 +247,10 @@ function getDeathCause(myState) { // check death according to current pos and di
 function executeFuneral(myState, cause) { // perform actions reqd after game end
     myState.isEnded = true;
     myState.isPaused = true; //???
-    alert(`Dead, lmao! Score: ${myState.snake.length}`);
+
+    document.getElementById("score").innerText=myState.snake.length
+    let endModal=new bootstrap.Modal(document.getElementById("endModal"))
+    endModal.show()
 }
 
 function updateState(myState) {
@@ -293,6 +296,7 @@ function start() {
         results.forEach(({ src, img }) => {
             image_elems[src] = img;
         });
+        document.getElementById("game").style.display="block"
         initGameState();
     });
 }

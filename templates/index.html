@@ -7,54 +7,119 @@
     </head>
     
     <body>
-        <canvas id="game" height="450px" width="450px" style="border:2px solid;"></canvas>
-        <script src="../static/js/data.js"></script>
-        <script src="../static/js/script.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <canvas id="game" height="450px" width="450px"></canvas>        
 
     <!--Basic Start Modal-->
-    <div class="modal fade show" id="startModal" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content p-3">
+    <div class="modal fade show" id="startModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" style="display:block;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <h5 class="modal-title w-100 text-center">Snake Game</h5>
+                </div>
 
-        <div class="modal-header">
-            <h5 class="modal-title">Snake Game</h5>
-        </div>
+                <div class="modal-body">
 
-        <div class="modal-body">
+                    <div class="mb-3" class="start">
+                        <label class="form-label">Enter Username</label> <!--TO DO : Validation-->
+                        <input type="text" id="username" class="form-control" placeholder="Your name">
+                    </div>
+                    
+                    <div class="retry mb-3">
+                        <table class="table">
+                            <tr>
+                                <td>HighScore</td> <!--High Score of Player to be added by JS-->
+                                <td id="highScore">0</td>
+                            </tr>
+                        </table>
+                    </div>
 
-            <div class="mb-3">
-            <label class="form-label">Enter Username</label>
-            <input type="text" id="username" class="form-control" placeholder="Your name">
+                    <div class="mb-3">
+                        <label class="form-label">Select Mode</label>
+                            <select id="mode" class="form-select">
+                                <option value="classic">Classic</option>
+                                <option value="cyberpunk">Cyberpunk</option>
+                            </select>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-primary" data-bs-target="#rulesModal" data-bs-toggle="modal" data-bs-dismiss="modal">Rules</button>
+                        <button class="btn btn-primary" id="startbtn" data-bs-dismiss="modal">Start Game</button>
+                    </div>
+
+                </div> 
+
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">Select Mode</label>
-                    <select id="mode" class="form-select">
-                        <option value="classic">Classic</option>
-                        <option value="cyberpunk">Cyberpunk</option>
-                    </select>
-            </div>
-
-            <div class="d-flex justify-content-between">
-                <button class="btn btn-info" id="rulesbtn">Rules</button>
-                <button class="btn btn-primary" id="startbtn">Start Game</button>
-            </div>
-
-            <div id="rulesBox" class="mt-3 d-none">
-            <ul>
-                <li>Use arrow keys to move the snake</li>
-                <li>Eat food to grow</li>
-                <li>Avoid hitting walls or yourself</li>
-                <li>Score increases with each food</li>
-            </ul>
-            </div>
-
-        </div>
-
         </div>
     </div>
+
+
+    <!--Rules Modal-->
+    <div class="modal fade" id="rulesModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <h5 class="modal-title w-100 text-center">Game Rules</h5>
+                </div>
+
+                <div class="modal-body">
+                    <ul>
+                        <li>Use arrow keys to move the snake</li>
+                        <li>Eat food to grow longer</li>
+                        <li>Avoid hitting walls</li>
+                        <li>Avoid colliding with yourself</li>
+                        <li>Score increases with each food eaten</li>
+                    </ul>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-target="#startModal" data-bs-dismiss="modal" data-bs-toggle="modal">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!--End Modal-->
+    <div class="modal fade" id="endModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <h5 class="modal-title w-100 text-center" >Game Over</h5>
+                </div>
+
+                <div class="modal-body">
+                    <h5 id="deathCause" class="text-center">SELF KILL</h5> <!--Cause of Death to be modified after death-->
+                    <table class="table">
+                        <tr>
+                            <td>HighScore</td><!--High Score by the palyer to be added by JS-->
+                            <td id="highScore">0</td>
+                        </tr>
+                        <tr>
+                            <td>Score</td>
+                            <td id="score">0</td> <!--Score to be updated by JS on death-->
+                        </tr>
+                        <tr>
+                            <td>Time Survived</td>
+                            <td id="time">0</td> <!--Time Survived to be updated by JS on death-->
+                        </tr>
+
+                    </table>
+                    
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-success" data-bs-target="#startModal" data-bs-dismiss="modal" data-bs-toggle="modal">Retry</button>
+                     <!--Opens Start Modal but changes a few elements resembling retry modal-->
+                    <button class="btn btn-success" data-bs-target="#finalModal" data-bs-dismiss="modal" data-bs-toggle="modal">Exit</button>
+                </div>
+            </div> 
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/js/data.js"></script>
+    <script src="../static/js/script.js"></script>
+    <script>
+    const modal = new bootstrap.Modal(document.getElementById('startModal'));
+    modal.show();
+    </script>
     </body>
 </html>
