@@ -33,9 +33,46 @@ app = Flask(__name__)
 def start():
     return render_template('index.html')
 
+@app.route("/save_score", methods=["POST"])
+def save_score():
+    record_data = request.form
+    #store data in a file
+
+    try:
+        with open("history.txt", "a+") as history_file:
+            history_file.seek(0)
+            
+            if history_file.read() == '':
+                history_file.seek(0)
+                history_file.write("start_time,username,score,cause,time_alive\n")
+                history_file.truncate()
+
+            record = ",".join(record_data.values())
+            history_file.write(record+"\n") #TODO: reformat this properly in future
+    except Exception as e:
+        return str(e) #TODO: if required format it properly
+    else: 
+        return "ok" #TODO: add a proper response
+
 #init data.js
 write_data()
 
 # run the application
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+try:
+    with open("history.txt", "a+") as history_file:
+        history_file.seek(0)
+        if history_file.read() == '':
+            history_file.seek(0)
+            history_file.write("start_time,username,score,cause,time_alive\n")
+            history_file.truncate()
+
+        record = "hi,bi,si,di,wi"
+        history_file.write(record+"\n") #TODO: reformat this properly in future
+except Exception as e:
+    prin(str(e)) #TODO: if required format it properly
+else: 
+    print("ok") #TODO: add a proper response
