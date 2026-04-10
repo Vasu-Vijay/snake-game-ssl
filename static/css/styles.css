@@ -1,13 +1,58 @@
 body {
-    /* display: flex; */
+    font-size: 20px;
+    color: #0505f5;
+    display: flex;
     justify-content: center;
     align-items: center;
+    background: #c1ff72;
 }
 
-#game {
-    border: 2px solid;
+.game-over {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ff0000 !important;
 }
 
+#deathCause {
+    font-size: 24px;
+    font-weight: bold;
+    color: rgb(219, 235, 1);
+}
 .hidden {
     display: none;
+}
+
+.form-label, .form-select,.form-control {
+    border-radius: 0;
+}
+
+.cell-label {
+    background-color: #76D7C4 !important;
+}
+.btn {
+    border-radius: 0;
+    box-shadow: 5px 5px 0 black;
+}
+
+.btn:hover{
+    transform: translate(5px, 5px);
+    box-shadow: 0 0 0 black;
+}
+
+.table td {
+    border: none;
+    font-size: 20px;
+    color: #0505f5;
+}
+
+.modal-title {
+    font-size: 31px;
+    color:rgb(255, 2, 213);
+}
+
+.modal-content {
+    box-shadow: 5px 5px 0 black;
+    border-radius: 0;
+    background: #76D7C4;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }

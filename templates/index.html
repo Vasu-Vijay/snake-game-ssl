@@ -24,7 +24,7 @@
     <div class="modal fade show" id="startModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         style="display:block;">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content p-3">
+            <div class="modal-content p-3 border-3 border-dark">
                 <div class="modal-header">
                     <h5 class="modal-title w-100 text-center">Snake Game</h5>
                 </div>
@@ -40,8 +40,8 @@
                     <div class="retry mb-3 hidden">
                         <table class="table">
                             <tr>
-                                <td>High Score</td> <!--High Score of Player to be added by JS-->
-                                <td id="start-high-score">0</td>
+                                <td class="cell-label">High Score</td>
+                                <td class="cell-label" id="start-high-score">0</td>
                             </tr>
                         </table>
                     </div>
@@ -98,23 +98,23 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3">
                 <div class="modal-header">
-                    <h5 class="modal-title w-100 text-center">Game Over!!</h5>
+                    <h5 class="modal-title w-100 text-center game-over" >Game Over !!</h5>
                 </div>
 
                 <div class="modal-body">
                     <h5 id="death-cause" class="text-center">Death by: </h5>
                     <table id="deathStats" class="table">
                         <tr>
-                            <td>High Score</td>
-                            <td id="death-high-score">0</td>
+                            <td class="cell-label">High Score</td>
+                            <td class="cell-label" id="death-high-score">0</td>
                         </tr>
                         <tr>
-                            <td>Score</td>
-                            <td id="death-score">0</td>
+                            <td class="cell-label">Score</td>
+                            <td class="cell-label" id="death-score">0</td>
                         </tr>
                         <tr>
-                            <td>Time Survived</td>
-                            <td id="death-time-alive">0</td>
+                            <td class="cell-label">Time Survived</td>
+                            <td class="cell-label" id="death-time-alive">0</td> 
                         </tr>
                     </table>
 
