@@ -12,12 +12,24 @@ const CANVAS_HEIGHT = 450;
 const CANVAS_WIDTH = 450;
 const REFRESH_RATE = 200;
 
-// let username = prompt("Enter your username: ", "guest_user");
-
 const image_elems={} //dict containing <image_path>:<html img elem> pairs
 
 const turn_images=[["body_topleft.png","body_bottomleft.png"],     //-1,-1   -1,+1     {del_x, del_y values}
                    ["body_topright.png","body_bottomright.png"]];  //+1,-1   +1,+1
+
+class User {
+    constructor(username = "guest_user") {
+        this.username = username;
+        this.records = [];
+    }
+
+    addRecord(record) {}
+
+    saveLatestRecord() {}
+}
+
+const username = prompt("Enter your username: ", "guest_user");
+const user = new User(username);
 
 class GameState {
     constructor(nRows = 10, nColumns = 10, cellSize = 30) {
@@ -253,8 +265,12 @@ function getDeathCause(myState) { // check death according to current pos and di
 function executeFuneral(myState, cause) { // perform actions reqd after game end
     myState.isEnded = true;
     myState.isPaused = true; //???
+    myState.deathTime = +new Date();
 
-    document.getElementById("score").innerText=myState.snake.length
+    user.addRecord({});
+    user.saveLatestRecord();
+
+    document.getElementById("score").innerText=myState.snake.length;
     let endModal=new bootstrap.Modal(document.getElementById("endModal"))
     endModal.show()
 }
