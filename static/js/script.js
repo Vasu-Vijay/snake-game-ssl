@@ -35,7 +35,7 @@ class GameState {
 
         this.snake = new Snake(this);
         this.grid = Array.from({ length: nColumns }, () =>
-            Array.from({ length: nRows }, () => new Cell("empty", null))
+            Array.from({ length: nRows }, () => [])
         );
 
         this.input = null; //rate at which snake moves in ms
@@ -156,11 +156,9 @@ function drawSnake(myState) { // to draw the snake, with corresponding sprites, 
 }
 
 function spawnFruit(myState) { //decides a random fruit and a random empty coordinate, then calls drawFruit to draw the fruit at chosen position
-    console.log("spawnFruit called with:", myState)
     let cumWeights = {};
     let totalWeight = 0;
     let id = "carrot";
-    //console.log(myState.fruitsUsed)
     for(id of myState.fruitsUsed) {
         if(!fruits[id]) {
             console.error("Invalid fruit id!");
@@ -178,12 +176,12 @@ function spawnFruit(myState) { //decides a random fruit and a random empty coord
 
     let [next_x, next_y] = myState.snake.nextPos(myState)
     let pos_x = Math.floor(Math.random() * myState.nColumns), pos_y = Math.floor(Math.random() * myState.nRows);
-    while(pos_x == myState.nColumns || pos_y == myState.nRows || myState.grid[pos_x][pos_y].entity != null || (pos_x == next_x && pos_y == next_y)) {
+    while(pos_x == myState.nColumns || pos_y == myState.nRows || myState.grid[pos_x][pos_y].length != 0 || (pos_x == next_x && pos_y == next_y)) {
         pos_x = Math.floor(Math.random() * myState.nColumns), pos_y = Math.floor(Math.random() * myState.nRows);
     }
 
     myState.food.push( {id: id, x: pos_x, y: pos_y} );
-    myState.grid[pos_x][pos_y] = new Cell("fruit", fruits[id]);
+    myState.grid[pos_x][pos_y].push(new Cell("fruit", fruits[id]));
 }
 
 function drawFruit(myState, id, pos_x, pos_y) { //draws a fruits[id] at x, y coords of grid
@@ -238,8 +236,16 @@ function updateCanvas(myState) {
 function getDeathCause(myState) { // check death according to current pos and dir
     let causeOfDeath = undefined;
     let [next_x, next_y] = myState.snake.nextPos(myState);
-    if(next_x >=myState.nColumns || next_x <0 || next_y>=myState.nRows || next_y<0) { causeOfDeath = "WALL"; }
-    else if(myState.grid[next_x][next_y].type == "snake_body" || (!myState.snake.tailChanged && myState.grid[next_x][next_y].type == "snake_tail")) { causeOfDeath = "SELF"; }
+    if(next_x >=myState.nColumns || next_x <0 || next_y>=myState.nRows || next_y<0) { 
+        causeOfDeath = "WALL"; 
+    } else {
+        let cells = myState.grid[next_x][next_y];
+        console.log(cells);
+
+        if(cells.length!=0 && (cells[cells.length-1].type == "snake_body" || (!myState.snake.tailChanged && cells[0].type == "snake_tail"))) { 
+            causeOfDeath = "SELF"; 
+        }
+    }
     console.log(causeOfDeath);
     return causeOfDeath;
 }
@@ -304,8 +310,8 @@ function start() {
 function initGameState() {
     const myState = new GameState();
     myState.startTime = new Date();
-    myState.grid[2][1] = new Cell("snake_head", myState.snake.head);
-    myState.grid[1][1] = new Cell("snake_tail", myState.snake.tail);
+    myState.grid[2][1].push(new Cell("snake_head", myState.snake.head));
+    myState.grid[1][1].push(new Cell("snake_tail", myState.snake.tail));
     setupInput(myState);
     initGame(myState);
 }
@@ -342,8 +348,8 @@ function consumeFruitAt(myState, x, y) {
         console.error("Index out of bounds"); 
         return 0; 
     } //TODO: add similar exhaustive checks at all places
-    if(myState.grid[x][y].type == "fruit") {
-        let fruit=myState.grid[x][y].entity;
+    if(myState.grid[x][y].length != 0 && myState.grid[x][y][0].type == "fruit") { //since only one fruit can be present if there is anything
+        let fruit=myState.grid[x][y][0].entity;
         fruit.onEat(fruit, myState);
         deleteFruit(myState, x, y);
         spawnFruit(myState);
@@ -354,7 +360,7 @@ function consumeFruitAt(myState, x, y) {
 }
 
 function deleteFruit(myState, x, y) {
-    myState.grid[x][y] = new Cell("empty", null);
+    myState.grid[x][y] = [];
     const idx = myState.food.findIndex(f => f.x === x && f.y === y )
     if (idx !== -1) {
         myState.food.splice(idx, 1)
@@ -365,7 +371,8 @@ function updateHead(myState){ // updates the sprite of new head and the next ele
     let [next_x, next_y] = myState.snake.nextPos(myState);
 
     myState.snake.body.unshift({x: next_x, y: next_y, sprite:`head_${getDirString(myState.snake.dir.x, myState.snake.dir.y)}.png`}) // add new head to snake[]
-    myState.grid[next_x][next_y] = new Cell("snake_head", myState.snake.head);
+
+    myState.grid[next_x][next_y].push(new Cell("snake_head", myState.snake.head));
     if(myState.snake.length>=3) { //for length=2 snake.unshift handles the image change //TODO: what about length=1??!! implement before adding negative fruits!
 
         let del_x = myState.snake.dir.x - myState.snake.prevdir.x;     // variables dirs are in such a way that the following checks form some nice patterns depending on del_x, del_y 
@@ -380,7 +387,8 @@ function updateHead(myState){ // updates the sprite of new head and the next ele
             myState.snake.body[1].sprite = turn_images[del_x][del_y]; // the array is made so that this works out
         }   
         if(myState.snake.length>2) {
-            myState.grid[myState.snake.body[1].x][myState.snake.body[1].y] = new Cell("snake_body", myState.snake.body[1])
+            let cellsAtPrevHead = myState.grid[myState.snake.body[1].x][myState.snake.body[1].y];
+            cellsAtPrevHead[cellsAtPrevHead.length-1] = new Cell("snake_body", myState.snake.body[1]);
         }
     }
 }
@@ -404,9 +412,13 @@ function updateTail(myState){ // updates the sprite of the new tail and paints b
     }
 
     myState.snake.body[myState.snake.length-2].sprite=`tail_${getDirString(-tailDir.x, -tailDir.y)}.png` // - passed in arguments since it flips up-down and right-left, which is the intended image [we had tail dir set as dir of movement, but tail images are named oppositely]
-    myState.grid[myState.snake.body[myState.snake.length-2].x][myState.snake.body[myState.snake.length-2].y] = new Cell("snake_tail", myState.snake.body[myState.snake.length-2]);
     
-    myState.grid[myState.snake.tail.x][myState.snake.tail.y] = new Cell("empty", null);
+    let cellsAtNewTail = myState.grid[myState.snake.body[myState.snake.length-2].x][myState.snake.body[myState.snake.length-2].y];
+    cellsAtNewTail[0] = new Cell("snake_tail", myState.snake.body[myState.snake.length-2]);
+    
+    let cellsAtPrevTail = myState.grid[myState.snake.tail.x][myState.snake.tail.y];
+    cellsAtPrevTail.shift();
+
     myState.snake.prevTail = myState.snake.tail;
 
     myState.snake.body.pop(); //delete the old tail
@@ -427,7 +439,6 @@ function initGame(myState) {
 }
 
 function gameLoop(myState) {
-    //console.log(myState);
     updateState(myState);
     updateCanvas(myState);
     if(!myState.isPaused) {
