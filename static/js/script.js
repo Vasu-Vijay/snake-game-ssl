@@ -17,6 +17,8 @@ const image_elems={} //dict containing <image_path>:<html img elem> pairs
 const turn_images=[["body_topleft.png","body_bottomleft.png"],     //-1,-1   -1,+1     {del_x, del_y values}
                    ["body_topright.png","body_bottomright.png"]];  //+1,-1   +1,+1
 
+let myState = null;
+
 class User {
     constructor(username = "guest_user") {
         this.username = username;
@@ -25,7 +27,7 @@ class User {
 
     addRecord(record) {
         if(!((record.startTime) && (record.score && record.score>=2) && (record.cause && ["SELF", "WALL"].includes(record.cause)) && (record.timeAlive && record.timeAlive > 0))) {
-            console.error("Invalid record pushed!");
+            console.error("Invalid record pushed!", record);
             return;
         }
         this.records.push(record);
@@ -90,16 +92,27 @@ class GameState {
 
         this.refreshRate = REFRESH_RATE;
         this.startTime = undefined;
+        this.deathTime = undefined;
         this.isPaused = true; //TODO: change it before commit
         this.gameLoopId = null;
-        this.isEnded = false;
 
         this.food = [];
         this.fruitsUsed = ["carrot", "triplecarrot", "goldenapple"];
+
+        this.inputHandlerFunction = null;
+    }
+
+    get isFinished() {
+        return this.deathTime != undefined;
     }
 
     gtoc(x, y) { // convert grid's x,y coords to absolute x,y coords of the canvas, to keep board in center
         return [(this.canvas.width-(this.nColumns)*this.cellSize)/2+x*this.cellSize, (this.canvas.height-(this.nRows)*this.cellSize)/2+y*this.cellSize];
+    }
+
+    destroy() {
+        this.isPaused = true;
+        document.removeEventListener("keydown", this.inputHandlerFunction);
     }
 }
 
@@ -297,22 +310,24 @@ function getDeathCause(myState) { // check death according to current pos and di
 }
 
 function executeFuneral(myState, cause) { // perform actions reqd after game end
-    myState.isEnded = true;
     myState.isPaused = true; //???
-    myState.deathTime = +new Date();
+    myState.deathTime = new Date();
 
     let st = myState.startTime;
-    let timeAlive = myState.deathTime - myState.startTime;
+    myState.snake.timeAlive = myState.deathTime.getTime() - myState.startTime.getTime();
 
     let pad = (n) => String(n).padStart(2, '0');
     let formattedStartTime = `[${st.getFullYear()}-${pad(st.getMonth()+1)}-${pad(st.getDate())} ${pad(st.getHours())}:${pad(st.getMinutes())}:${pad(st.getSeconds())}]`;
 
-    user.addRecord({"startTime": formattedStartTime, "score": myState.snake.length, "cause": cause, "timeAlive": timeAlive});
+    user.addRecord({"startTime": formattedStartTime, "score": myState.snake.length, "cause": cause, "timeAlive": myState.snake.timeAlive});
     user.saveLatestRecord();
+    
 
     document.getElementById("score").innerText=myState.snake.length;
     let endModal=new bootstrap.Modal(document.getElementById("endModal"))
-    endModal.show()
+    endModal.show();
+
+    myState.destroy();
 }
 
 function updateState(myState) {
@@ -364,7 +379,7 @@ function start() {
 }
 
 function initGameState() {
-    const myState = new GameState();
+    myState = new GameState();
     myState.grid[2][1].push(new Cell("snake_head", myState.snake.head));
     myState.grid[1][1].push(new Cell("snake_tail", myState.snake.tail));
     setupInput(myState);
@@ -372,25 +387,28 @@ function initGameState() {
 }
 
 function setupInput(myState) {
-    document.addEventListener("keydown", (event) => { // event listeners for keydowns, stores the dir vector in move
-        const keys = {
-            ArrowUp: { x: 0, y: -1},
-            ArrowDown: { x: 0, y: 1},
-            ArrowRight: { x: 1, y: 0},
-            ArrowLeft: { x: -1, y: 0}
+    myState.inputHandlerFunction = (event) => { inputHandler(event, myState); }
+    document.addEventListener("keydown", myState.inputHandlerFunction);
+}
+
+function inputHandler(event, myState) { // event listeners for keydowns, stores the dir vector in move
+    const keys = {
+        ArrowUp: { x: 0, y: -1},
+        ArrowDown: { x: 0, y: 1},
+        ArrowRight: { x: 1, y: 0},
+        ArrowLeft: { x: -1, y: 0}
+    }
+    myState.input = keys[event.key];
+    if(myState.input) {
+        if(myState.isPaused == true && myState.isFinished == false) {
+            myState.isPaused = false;
+            startGameLoop(myState);
         }
-        myState.input = keys[event.key];
-        if(myState.input) {
-            if(myState.isPaused == true && myState.isEnded == false) {
-                myState.isPaused = false;
-                startGameLoop(myState);
-            }
-        }
+    }
         
-        // if(event.key=="p") { //TODO: furnish this
-        //     pauseGame();
-        // }
-    });
+    // if(event.key=="p") { //TODO: furnish this
+    //     pauseGame();
+    // }
 }
 
 function startGameLoop(myState) {
@@ -495,11 +513,17 @@ function initGame(myState) {
 }
 
 function gameLoop(myState) {
+    if(myState.isPaused) { return; }
     updateState(myState);
     updateCanvas(myState);
-    if(!myState.isPaused) {
-        setTimeout(() => gameLoop(myState), myState.refreshRate)
-    }
+    setTimeout(() => gameLoop(myState), myState.refreshRate);
 }
 
 start();
+
+document.getElementById("retryButton").addEventListener("click", (e) => {
+    if(!myState.isFinished) {
+        myState.destroy();
+    }
+    initGameState();
+});
