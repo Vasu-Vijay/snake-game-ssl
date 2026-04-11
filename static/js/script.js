@@ -28,9 +28,10 @@ class User {
     addRecord(record) {
         if(!((record.startTime) && (record.score && record.score>=2) && (record.cause && ["SELF", "WALL"].includes(record.cause)) && (record.timeAlive && record.timeAlive > 0))) {
             console.error("Invalid record pushed!", record);
-            return;
+            return null;
         }
         this.records.push(record);
+        return 1;
     }
 
     saveLatestRecord() {
@@ -66,8 +67,7 @@ class User {
     }
 }
 
-const username = prompt("Enter your username: ", "guest_user");
-const user = new User(username);
+const user = new User();
 
 class GameState {
     constructor(nRows = 10, nColumns = 10, cellSize = 30) {
@@ -104,6 +104,10 @@ class GameState {
 
     get isFinished() {
         return this.deathTime != undefined;
+    }
+
+    get score() {
+        return this.snake.length + this.snake.growthBuffer;
     }
 
     gtoc(x, y) { // convert grid's x,y coords to absolute x,y coords of the canvas, to keep board in center
@@ -319,15 +323,17 @@ function executeFuneral(myState, cause) { // perform actions reqd after game end
     let pad = (n) => String(n).padStart(2, '0');
     let formattedStartTime = `[${st.getFullYear()}-${pad(st.getMonth()+1)}-${pad(st.getDate())} ${pad(st.getHours())}:${pad(st.getMinutes())}:${pad(st.getSeconds())}]`;
 
-    user.addRecord({"startTime": formattedStartTime, "score": myState.snake.length, "cause": cause, "timeAlive": myState.snake.timeAlive});
-    user.saveLatestRecord();
+    let successfullyAdded = user.addRecord({"startTime": formattedStartTime, "score": myState.score, "cause": cause, "timeAlive": myState.snake.timeAlive});
+    if(successfullyAdded) {
+        user.saveLatestRecord();
+    }
     
 
-    document.getElementById("score").innerText=myState.snake.length;
+    document.getElementById("score").innerText = myState.score;
     let endModal=new bootstrap.Modal(document.getElementById("endModal"))
     endModal.show();
 
-    myState.destroy();
+    myState.destroy();  //TODO maybe add a proper reset function
 }
 
 function updateState(myState) {
@@ -356,12 +362,7 @@ function updateState(myState) {
     } else {                      // only need to move tail, head remains
         updateTail(myState);
         myState.snake.growthBuffer += 1;
-    }
-
-    if(myState.snake.immunityTime > 0) {
-        myState.snake.immunityTime -= myState.refreshRate; //TODO: refine this if needed like in old code
-    }
-    console.log(myState.snake.immunityTime);    
+    }  
 
     // if(myState.food.length == 0) {
     //     spawnFruit();
@@ -375,8 +376,28 @@ function start() {
         });
         document.getElementById("game").style.display="block"
         initGameState();
+        updateTimeDisplays(+new Date());
     });
 }
+
+function updateTimeDisplays(prevTime) { //TODO: ~~~~!!!!!!!!!!!! change the logic to do floor to the refresh rate otherwise unfair leaderboard !!!!!!!!!!!!!!!!!!!!~~~~~
+    let currentTime = +new Date();
+    if(!myState.isPaused) {
+        if(!prevTime) {
+            prevTime = +new Date();
+        }
+        let dt = currentTime - prevTime;
+        myState.snake.timeAlive += dt;
+        document.getElementById("timeDisplayer").innerHTML = `Time: ${myState.snake.timeAlive/1000}s`;
+        if(myState.snake.isImmune) {
+            let formattedImmunityTime = String(Math.trunc(myState.snake.immunityTime/100)/10).padEnd(3, ".0");
+            document.getElementById("immunityTimeDisplayer").innerHTML = `Immunity time: ${formattedImmunityTime}s`;
+            myState.snake.immunityTime -= dt;
+            myState.snake.immunityTime = Math.max(0, myState.snake.immunityTime);
+        }
+    }
+    window.requestAnimationFrame(() => updateTimeDisplays(currentTime));
+};
 
 function initGameState() {
     myState = new GameState();
@@ -505,16 +526,29 @@ function ateGoldenApple(fruit, myState) {
     myState.snake.immunityTime += IMMUNITY_TIME;
 }
 
+function updateScoreHTML(myState) {
+    document.getElementById("scoreDisplayer").innerHTML = `Score: ${myState.score}`;
+}
+
+function resetTimeHTML(myState) {
+    document.getElementById("timeDisplayer").innerHTML = "Time: 0.000s";
+    document.getElementById("immunityTimeDisplayer").innerHTML = "Immunity Time: 0.0s"
+}
+
 function initGame(myState) {
     drawBoard(myState);
     spawnFruit(myState);
     updateCanvas(myState);
+    updateScoreHTML(myState);
+    resetTimeHTML(myState);
+
     startGameLoop(myState); //TODO: change later
 }
 
 function gameLoop(myState) {
     if(myState.isPaused) { return; }
     updateState(myState);
+    updateScoreHTML(myState);
     updateCanvas(myState);
     setTimeout(() => gameLoop(myState), myState.refreshRate);
 }
