@@ -60,19 +60,3 @@ write_data()
 # run the application
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-try:
-    with open("history.txt", "a+") as history_file:
-        history_file.seek(0)
-        if history_file.read() == '':
-            history_file.seek(0)
-            history_file.write("start_time,username,score,cause,time_alive\n")
-            history_file.truncate()
-
-        record = "hi,bi,si,di,wi"
-        history_file.write(record+"\n") #TODO: reformat this properly in future
-except Exception as e:
-    prin(str(e)) #TODO: if required format it properly
-else: 
-    print("ok") #TODO: add a proper response
