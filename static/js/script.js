@@ -16,6 +16,8 @@ const image_elems={} //dict containing <image_path>:<html img elem> pairs
 const turn_images=[["body_topleft.png","body_bottomleft.png"],     //-1,-1   -1,+1     {del_x, del_y values}
                    ["body_topright.png","body_bottomright.png"]];  //+1,-1   +1,+1
 
+let isFirst = true;
+
 let myState = null;
 
 class User {
@@ -412,11 +414,14 @@ function start() {
     user.username = username;
     let startModal=bootstrap.Modal.getInstance(document.getElementById("startModal"));
     startModal.hide();
+    if(isFirst) {
+        Array.from(document.getElementsByClassName("retry")).forEach(el => { el.classList.toggle("hidden"); });
+        Array.from(document.getElementsByClassName("start")).forEach(el => { el.classList.toggle("hidden"); });
+        
+        document.getElementById("mainBody").classList.toggle("hidden");
 
-    Array.from(document.getElementsByClassName("retry")).forEach(el => { el.classList.toggle("hidden"); });
-    Array.from(document.getElementsByClassName("start")).forEach(el => { el.classList.toggle("hidden"); });
-    
-    document.getElementById("mainBody").classList.toggle("hidden");
+        isFirst = false;
+    }
     initGameState();
     updateTimeDisplays(+new Date());
 }
@@ -437,7 +442,10 @@ function updateTimeDisplays(prevTime) { //TODO: ~~~~!!!!!!!!!!!! change the logi
             myState.snake.immunityTime = Math.max(0, myState.snake.immunityTime);
         }
     }
-    window.requestAnimationFrame(() => updateTimeDisplays(currentTime));
+
+    if(!myState.isFinished) {
+        window.requestAnimationFrame(() => updateTimeDisplays(currentTime));
+    }
 };
 
 function initGameState() {
@@ -603,4 +611,5 @@ document.getElementById("retryButton").addEventListener("click", (e) => {
         myState.destroy();
     }
     initGameState();
+    updateTimeDisplays(+new Date());
 });
