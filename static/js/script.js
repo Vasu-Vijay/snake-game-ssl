@@ -4,8 +4,7 @@ const fruits = {
     "goldenapple": {name:"Golden Apple", score:0, sprite:"../static/sprites/fruits/golden_apple.png", rel_probability: 1, onEat: ateGoldenApple} //TODO: image to be made, also fix probability
 }
 
-const snake_sprites=["../static/sprites/classic/", "../static/sprites/cyberpunk/"]
-var graphics_mode = 0 // 0: classic mode
+var graphicsMode = "classic";
 
 const IMMUNITY_TIME = 4000;
 const CANVAS_HEIGHT = 450;
@@ -17,12 +16,18 @@ const image_elems={} //dict containing <image_path>:<html img elem> pairs
 const turn_images=[["body_topleft.png","body_bottomleft.png"],     //-1,-1   -1,+1     {del_x, del_y values}
                    ["body_topright.png","body_bottomright.png"]];  //+1,-1   +1,+1
 
+let isFirst = true;
+
 let myState = null;
 
 class User {
     constructor(username = "guest_user") {
         this.username = username;
         this.records = [];
+    }
+
+    get highScore() {
+        return this.records.reduce((maxScore, record) => record.score > maxScore ? record.score : maxScore, 0);
     }
 
     addRecord(record) {
@@ -178,7 +183,7 @@ function loadImages(images) {
             img.onerror = reject
         });
     });
-  return Promise.all(promises);
+    return Promise.all(promises);
 }
 
 function drawBoard(myState) {
@@ -213,8 +218,8 @@ function drawSnake(myState) { // to draw the snake, with corresponding sprites, 
         }
 
         let [canvas_x, canvas_y] = myState.gtoc(s.x, s.y);
-        let image_path = snake_sprites[graphics_mode]+s.sprite; // path = folder + base file name
-        myState.ctx.drawImage(image_elems[image_path], canvas_x, canvas_y, myState.cellSize, myState.cellSize);
+        let imagePath = "../static/sprites/" + graphicsMode + "/" + s.sprite; // path = folder + base file name
+        myState.ctx.drawImage(image_elems[imagePath], canvas_x, canvas_y, myState.cellSize, myState.cellSize);
     }
 }
 
@@ -327,10 +332,15 @@ function executeFuneral(myState, cause) { // perform actions reqd after game end
     if(successfullyAdded) {
         user.saveLatestRecord();
     }
-    
 
-    document.getElementById("score").innerText = myState.score;
-    let endModal=new bootstrap.Modal(document.getElementById("endModal"))
+    document.getElementById("death-score").innerText = myState.score;
+    document.getElementById("death-cause").innerHTML = `Death by: ${cause}`;
+    document.getElementById("death-high-score").innerHTML = user.highScore;
+    document.getElementById("death-time-alive").innerHTML = myState.snake.timeAlive;
+
+    document.getElementById("start-high-score").innerHTML = user.highScore;
+
+    let endModal = new bootstrap.Modal(document.getElementById("endModal"));
     endModal.show();
 
     myState.destroy();  //TODO maybe add a proper reset function
@@ -369,15 +379,53 @@ function updateState(myState) {
     // }
 }
 
-function start() {
+function loadContent() {
     loadImages(images).then(results => {
         results.forEach(({ src, img }) => {
             image_elems[src] = img;
         });
-        document.getElementById("game").style.display="block"
-        initGameState();
-        updateTimeDisplays(+new Date());
-    });
+        
+    });    
+}
+
+function isNameValid(username) {
+    let msg = "";
+    if(username.includes(",")) { msg = "Username can not contain commas."; }
+    if(username.length < 3 || username.length > 15) { msg = "Username should have atleast 3 and atmost 15 characters."; }
+    return msg;
+}
+
+function validateUsername(username) {
+    let errorMsg = isNameValid(username);
+    if(errorMsg != "") {
+        let el = document.getElementById("usernameError");
+        el.innerHTML = errorMsg;
+        el.style.display = "block";
+       return false;
+    }
+    document.getElementById("usernameError").classList.toggle("hidden");
+    return true;
+}
+
+function start() {
+    let username = document.getElementById("username").value;
+    graphicsMode = document.getElementById("mode").value;
+    if(!validateUsername(username)) {
+        return;
+    }
+    user.username = username;
+    let startModal=bootstrap.Modal.getInstance(document.getElementById("startModal"));
+    startModal.hide();
+    if(isFirst) {
+        Array.from(document.getElementsByClassName("retry")).forEach(el => { el.classList.toggle("hidden"); });
+        Array.from(document.getElementsByClassName("start")).forEach(el => { el.classList.toggle("hidden"); });
+        
+        document.getElementById("mainBody").classList.toggle("hidden");
+
+        isFirst = false;
+    }
+    initGameState();
+    updateTimeDisplays(+new Date());
 }
 
 function updateTimeDisplays(prevTime) { //TODO: ~~~~!!!!!!!!!!!! change the logic to do floor to the refresh rate otherwise unfair leaderboard !!!!!!!!!!!!!!!!!!!!~~~~~
@@ -396,7 +444,10 @@ function updateTimeDisplays(prevTime) { //TODO: ~~~~!!!!!!!!!!!! change the logi
             myState.snake.immunityTime = Math.max(0, myState.snake.immunityTime);
         }
     }
-    window.requestAnimationFrame(() => updateTimeDisplays(currentTime));
+
+    if(!myState.isFinished) {
+        window.requestAnimationFrame(() => updateTimeDisplays(currentTime));
+    }
 };
 
 function initGameState() {
@@ -553,11 +604,14 @@ function gameLoop(myState) {
     setTimeout(() => gameLoop(myState), myState.refreshRate);
 }
 
-start();
+loadContent();
 
-document.getElementById("retryButton").addEventListener("click", (e) => {
-    if(!myState.isFinished) {
-        myState.destroy();
-    }
-    initGameState();
-});
+document.getElementById("startbtn").addEventListener("click", start);
+
+// document.getElementById("retryButton").addEventListener("click", (e) => {
+//     if(!myState.isFinished) {
+//         myState.destroy();
+//     }
+//     initGameState();
+//     updateTimeDisplays(+new Date());
+// });

@@ -36,8 +36,8 @@ def start():
 @app.route("/save_score", methods=["POST"])
 def save_score():
     record_data = request.form
+    
     #store data in a file
-
     try:
         with open("history.txt", "a+") as history_file:
             history_file.seek(0)
@@ -47,7 +47,7 @@ def save_score():
                 history_file.write("start_time,username,score,cause,time_alive\n")
                 history_file.truncate()
 
-            record = ",".join(record_data.values())
+            record = ",".join(record_data.values()) #TODO: sanitize data and check before writing, all edge cases
             history_file.write(record+"\n") #TODO: reformat this properly in future
     except Exception as e:
         return str(e) #TODO: if required format it properly
