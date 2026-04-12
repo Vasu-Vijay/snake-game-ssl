@@ -17,9 +17,6 @@
             <p id="timeDisplayer">Time: 0.000s</p>
             <p id="immunityTimeDisplayer">Immunity Time: 0s</p>
         </div>
-        <div id="controls">
-            <button style="width:100px; height:100px" id="retryButton">Retry</button>
-        </div>
     </div>
 
 
@@ -43,8 +40,8 @@
                     <div class="retry mb-3 hidden">
                         <table class="table">
                             <tr>
-                                <td>HighScore</td> <!--High Score of Player to be added by JS-->
-                                <td id="highScore">0</td>
+                                <td>High Score</td> <!--High Score of Player to be added by JS-->
+                                <td id="start-high-score">0</td>
                             </tr>
                         </table>
                     </div>
@@ -127,8 +124,7 @@
                     <button class="btn btn-success" data-bs-target="#startModal" data-bs-dismiss="modal"
                         data-bs-toggle="modal">Retry</button>
                     <!--Opens Start Modal but changes a few elements resembling retry modal-->
-                    <button class="btn btn-success" data-bs-target="#finalModal" data-bs-dismiss="modal"
-                        data-bs-toggle="modal">Exit</button>
+                    <button class="btn btn-success">Show Stats</button>
                 </div>
             </div>
         </div>

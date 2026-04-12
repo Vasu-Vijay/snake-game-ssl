@@ -338,6 +338,8 @@ function executeFuneral(myState, cause) { // perform actions reqd after game end
     document.getElementById("death-high-score").innerHTML = user.highScore;
     document.getElementById("death-time-alive").innerHTML = myState.snake.timeAlive;
 
+    document.getElementById("start-high-score").innerHTML = user.highScore;
+
     let endModal = new bootstrap.Modal(document.getElementById("endModal"));
     endModal.show();
 
@@ -606,10 +608,10 @@ loadContent();
 
 document.getElementById("startbtn").addEventListener("click", start);
 
-document.getElementById("retryButton").addEventListener("click", (e) => {
-    if(!myState.isFinished) {
-        myState.destroy();
-    }
-    initGameState();
-    updateTimeDisplays(+new Date());
-});
+// document.getElementById("retryButton").addEventListener("click", (e) => {
+//     if(!myState.isFinished) {
+//         myState.destroy();
+//     }
+//     initGameState();
+//     updateTimeDisplays(+new Date());
+// });
