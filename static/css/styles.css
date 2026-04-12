@@ -6,9 +6,8 @@ body {
 
 #game {
     border: 2px solid;
-    display: none;
 }
 
-.retry {
+.hidden {
     display: none;
 }
