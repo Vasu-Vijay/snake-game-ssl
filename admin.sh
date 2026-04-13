@@ -4,7 +4,7 @@
 #Specified Current User/Users being analysed.
 user=all 
 #Different type of operations that can be performed from menu.
-operation=("Query_User" "Recent_Score" "Analytics" "Delete_Entries" "Log_Rotation" "Restore_Logs" "Specific_View" "Exit")
+operation=("Query_User" "Recent_Score" "Analytics" "Delete_Entries" "Log_Rotation" "Restore_Logs" "Sorted_View" "Exit")
 
 #To be used to store all users in history.txt
 function update_userlist(){
@@ -167,7 +167,7 @@ function tabular_display(){
 #Displays menu with selectable operations on terminal.
 function menu_display(){
     while true; do
-        options=("1] Query about a Specific User" "2] View scores of recent games" "3] View Analytics" "4] Delete Entries" "5] Log Rotation" "6] Restore Logs" "7] Specific View" "8] Exit")
+        options=("1] Query about a Specific User" "2] View scores of recent games" "3] View Analytics" "4] Delete Entries" "5] Log Rotation" "6] Restore Logs" "7] Sorted View" "8] Exit")
         tabular_display
         read -p $'\e[33mEnter command : \e[0m' command #bash does not interpret escaping inside "" but understands it in $''
 
@@ -245,7 +245,7 @@ function Restore_Logs(){
 }
 
 #View the logs sorted based on specific filters(time stamp as default.)
-function Specific_View(){
+function Sorted_View(){
     printf "\033c"
 
     while true; do 
@@ -263,21 +263,24 @@ function Specific_View(){
 
     if [[ "$key" == '1' ]];then 
         while true;do
-        read -p $'\e[33mEnter the specific user : \e[0m' sp_user
-            if valid_user "$sp_user" ; then 
-                if [[ $sp_user == "q" || $sp_user == $'\x1b' ]]; then
-                    Specific_View
-                elif [[ $user_list =~ ":$sp_user:" || "$user" == "all" ]]; then
-                    #"$2" == sp_user does not work as inside "" $2 is considered as a literal string
-                    awk -v sp_user="$sp_user" -F "," '
-                        {if( $2 == sp_user ){             
-                            print $0
-                        }}
-                    ' history.txt | less
-                    break
-                fi
-            fi
+        read -p $'\e[33mSort in ascending order\e[37m {default} \e[33m(1) or Sort in descending order (2) : \e[0m' command
+        echo "$command"
+        if valid_command 2 $command; then
+            break
+        else
+            printf "\033c" 
+            printf "\e[31mPlease enter a valid Command\e[0m\n"
+        fi        
         done
+        if [[ "$command" == 2 ]];then
+            sort -fbdr -t "," -k2,2 -k3,3nr -k5,5 history.txt | less
+        elif [[ "$command" == 'q' || "$command" == $'\x1b' ]];then {
+            printf "\033c"
+            return
+        } else {
+            sort -fbd -t "," -k2,2 -k3,3nr -k5,5 history.txt | less
+        }
+        fi
     elif [[ "$key" == '2' ]];then {
         sort -rnt "," -k 5 history.txt | less
     } elif [[ "$key" == '3' ]];then {
