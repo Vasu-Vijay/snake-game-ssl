@@ -63,7 +63,7 @@ function tabular_display(){
         for col in "${data_row[@]}"
         do
             lines=()
-                while read -r line; do
+                while read -e -r line; do
                     lines+=("$line")
                 done < <(wrap_text "$col")
             wrapped+=("$(printf "%s\n" "${lines[@]}")")
@@ -88,7 +88,7 @@ function tabular_display(){
             for ((j=0; j<COLS; j++))
             do
                 # Extract this block's lines
-                IFS=$'\n' read -d '' -r -a block_lines <<< "${wrapped[j]}" #-d is important as otherwise reading stops at even spaces
+                IFS=$'\n' read -e -d '' -r -a block_lines <<< "${wrapped[j]}" #-d is important as otherwise read -eing stops at even spaces
                 text="${block_lines[line]}"
 
                 # Padding + alignment
@@ -169,7 +169,7 @@ function menu_display(){
     while true; do
         options=("1] Query about a Specific User" "2] View scores of recent games" "3] View Analytics" "4] Delete Entries" "5] Log Rotation" "6] Restore Logs" "7] Sorted View" "8] Exit")
         tabular_display
-        read -p $'\e[33mEnter command : \e[0m' command #bash does not interpret escaping inside "" but understands it in $''
+        read -e -p $'\e[33mEnter command : \e[0m' command #bash does not interpret escaping inside "" but understands it in $''
 
         if valid_command ${#options[@]} $command; then
             break
@@ -191,7 +191,7 @@ function Exit(){
 function Query_User(){
     
     while true; do
-    read -p $'\e[33mEnter Username : \e[0m' user
+    read -e -p $'\e[33mEnter Username : \e[0m' user
         if valid_user "$user" ; then 
 
             if [[ $user == "q" || $user == $'\x1b' ]]; then
@@ -251,7 +251,7 @@ function Sorted_View(){
     while true; do 
         options=("1] User" "2] Time survived" "3] Score")
         tabular_display
-        read -n 1 -p $'\e[33mSelect a specific feature to filter : \e[0m' key
+        read -e -n 1 -p $'\e[33mSelect a specific feature to filter : \e[0m' key
         printf "\n"
         if valid_command 3 $key; then
             break
@@ -263,7 +263,7 @@ function Sorted_View(){
 
     if [[ "$key" == '1' ]];then 
         while true;do
-        read -p $'\e[33mSort in ascending order\e[37m {default} \e[33m(1) or Sort in descending order (2) : \e[0m' command
+        read -e -p $'\e[33mSort in ascending order\e[37m {default} \e[33m(1) or Sort in descending order (2) : \e[0m' command
         echo "$command"
         if valid_command 2 $command; then
             break
@@ -357,7 +357,7 @@ function Delete_Entries(){
     while true; do
         options=("1] Specific User" "2] Timestamp" "3] Misformatted Records")
         tabular_display
-        read -p $'\e[33mChoose a method to delete : \e[0m' method
+        read -e -p $'\e[33mChoose a method to delete : \e[0m' method
 
         if valid_command 3 $method; then
             break
@@ -371,8 +371,8 @@ function Delete_Entries(){
         printf "\033c"
         menu_display
     elif [[ $method == 1 ]] ; then 
-        read -p $'\e[33mSpecify a User : \e[0m' player
-        read -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
+        read -e -p $'\e[33mSpecify a User : \e[0m' player
+        read -e -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
         if [[ $confirmation == "y" ]]; then
             awk -F "," -v user="$player" '
                 {
@@ -391,11 +391,11 @@ function Delete_Entries(){
             menu_display
         fi
     elif [[ $method == 2 ]]; then
-        read -p $'\e[33mEnter time stamp in format ( YYYY-MM-DD HH:MM:SS ) - \e[0m' timestamp
+        read -e -p $'\e[33mEnter time stamp in format ( YYYY-MM-DD HH:MM:SS ) - \e[0m' timestamp
         if Validate_Timestamp "$timestamp" ; then 
-            read -p $'\e[33mDo you want to delete entries after the timestamp or before (1/2) - \e[0m' option
+            read -e -p $'\e[33mDo you want to delete entries after the timestamp or before (1/2) - \e[0m' option
             if [[ $option == 1 ]]; then
-                read -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
+                read -e -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
                 if [[ $confirmation == "y" ]]; then
                     awk -F "," -v timestamp="[$timestamp]" '
                         {
@@ -414,7 +414,7 @@ function Delete_Entries(){
                     menu_display
                 fi
             elif [[ $option == 2 ]]; then
-                read -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
+                read -e -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
                 if [[ $confirmation == "y" ]]; then
                     awk -F "," -v timestamp="[$timestamp]" '
                         {
@@ -455,6 +455,7 @@ function Delete_Entries(){
 }
 
 update_userlist
+history -c
 printf "\033c"
 #Display menu untill not exited
 while true; do
