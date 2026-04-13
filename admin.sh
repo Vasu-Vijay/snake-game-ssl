@@ -74,17 +74,17 @@ function tabular_display(){
 
         for((y=0;y<COLS;y++)) #Prints separator between columns
         do  
-            printf "|"
+            printf "│"
             printf "%*s" $PADDING ""
                 printf "%-*s" $((COL_WIDTH - 2*PADDING)) 
                 printf "%*s" $PADDING ""
         done
-        printf "|"
+        printf "│"
         printf "\n"
 
         for ((line=0; line<maxlines_block+1; line++))
         do
-            printf "|"
+            printf "│"
             for ((j=0; j<COLS; j++))
             do
                 # Extract this block's lines
@@ -93,30 +93,65 @@ function tabular_display(){
 
                 # Padding + alignment
                 printf "%*s" $PADDING ""
-                printf "\e[35m%-*s\e[0m" $((COL_WIDTH - 2*PADDING)) "$text"
+                printf "\e[96m%-*s\e[0m" $((COL_WIDTH - 2*PADDING)) "$text"
                 printf "%*s" $PADDING ""
-                printf "|"
+                printf "│"
             done
             printf "\n"
         done
     }
     
     #Prints the border of table
-    function print_border() {
-        printf "+"
+    function print_border_top(){
+        printf "┌"
         for ((c=0; c<COLS; c++)); do
             for ((w=0; w<COL_WIDTH; w++)); do
-                printf "-"
+                printf "─"
             done
-            printf "+"
+            if [ $c != $(($COLS-1)) ];then
+                printf "┬"
+            else
+                printf "┐"  
+            fi
         done
         printf "\n"
     }
 
+    function print_border() {
+        printf "├"
+        for ((c=0; c<COLS; c++)); do
+            for ((w=0; w<COL_WIDTH; w++)); do
+                printf "─"
+            done
+            if [ $c != $(($COLS-1)) ]; then
+                printf "┼"
+            fi
+        done
+        printf "┤\n"
+    }
+
+    function print_border_bottom(){
+       printf "└"
+        for ((c=0; c<COLS; c++)); do
+            for ((w=0; w<COL_WIDTH; w++)); do
+                printf "─"
+            done
+            if [ $c != $(($COLS-1)) ];then
+                printf "┴"
+            else
+                printf "┘"  
+            fi
+        done
+        printf "\n" 
+    }
     #Prints the Table
     for ((i=0; i<${#options[@]}; i+=COLS))
     do
-        print_border
+        if [ $i == 0 ]; then
+            print_border_top
+        else
+            print_border
+        fi
         row=()
         for ((j=0; j<COLS; j++))
         do
@@ -125,7 +160,7 @@ function tabular_display(){
         print_row "${row[@]}"
         
     done
-    print_border
+    print_border_bottom
 }
 
 
@@ -160,6 +195,7 @@ function Query_User(){
         if valid_user "$user" ; then 
 
             if [[ $user == "q" || $user == $'\x1b' ]]; then
+                printf "\033c"
                 menu_display
             elif [[ $user_list =~ ":$user:" || "$user" == "all" ]]; then
                 break
@@ -215,7 +251,7 @@ function Specific_View(){
     while true; do 
         options=("1] User" "2] Time survived" "3] Score")
         tabular_display
-        read -n 1 -p $'\e[33mSelect a specific feture to filter : \e[0m' key
+        read -n 1 -p $'\e[33mSelect a specific feature to filter : \e[0m' key
         printf "\n"
         if valid_command 3 $key; then
             break
@@ -247,6 +283,7 @@ function Specific_View(){
     } elif [[ "$key" == '3' ]];then {
         sort -rnt "," -k 3,3 history.txt | less
     } elif [[ "$key" == 'q' || "$key" == $'\x1b' ]];then {
+        printf "\033c"
         menu_display
     } else {
         sort -rt "," -k 1 history.txt | less
@@ -343,7 +380,7 @@ function Delete_Entries(){
             
             mv history.tmp history.txt
             
-            
+            printf "\033c"
             printf "\e[32mhistory.txt has been updated\e[0m\n"
             update_userlist
         else 
@@ -409,6 +446,7 @@ function Delete_Entries(){
             }
         }' history.txt > history.tmp
         mv history.tmp history.txt
+        printf "\033c"
         printf "\e[32mNo misformated Records Remains\e[0m\n"
     fi
 }
