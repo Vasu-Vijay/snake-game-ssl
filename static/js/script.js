@@ -583,11 +583,20 @@ function updateTail(myState){ // updates the sprite of the new tail and paints b
     myState.snake.body.pop(); //delete the old tail
 }
 
+function playSound(basePath) {
+    let sfxPath = `../static/sounds/${graphicsMode}/${basePath}.mp3`;
+    const sfx = new Audio(sfxPath);
+    sfx.play();
+}
+
 function ateCarrots(fruit, myState) {
     let nCarrots = fruit.score;
+    playSound("ateCarrot");
 }
 function ateGoldenApple(fruit, myState) {
     myState.snake.immunityTime += IMMUNITY_TIME;
+    myState.snake.color = "immune";
+    playSound("immuneOn");
 }
 
 function updateScoreHTML(myState) {
@@ -613,9 +622,7 @@ function gameLoop(myState, prevTime) {
     if(myState.isPaused) { return; }
     let curTime = +new Date();
     if(myState.snake.isImmune) {
-        if(myState.snake.immunityTime > 1000) {
-            myState.snake.color = "immune";
-        } else {
+        if(myState.snake.immunityTime < 1000) {
             myState.snake.color == "main" ? myState.snake.color = "immune" : myState.snake.color = "main";
         }
     } else {
