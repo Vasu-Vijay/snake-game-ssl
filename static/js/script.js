@@ -103,7 +103,8 @@ class GameState {
             Array.from({ length: nRows }, () => [])
         );
 
-        this.input = null; //rate at which snake moves in ms
+        this.inputBuffer = [];
+        this.inputBufferSize = 3;
 
         this.refreshRate = REFRESH_RATE;
         this.graphicsRefreshRate = GRAPHICS_REFRESH_RATE;
@@ -296,12 +297,14 @@ function updateDir(myState){ //changes dir variable according to the last key pr
     myState.snake.prevdir.x = myState.snake.dir.x;
     myState.snake.prevdir.y = myState.snake.dir.y;
     
-    if (!myState.input || (getDirString(myState.snake.dir.x, myState.snake.dir.y) == getDirString(-myState.input.x, -myState.input.y))) { 
+    if (!myState.inputBuffer[0] || (checkOpposite(myState.snake.dir, myState.inputBuffer[0]))) { 
         return; 
     }
 
-    myState.snake.dir.x = myState.input.x;
-    myState.snake.dir.y = myState.input.y;
+    myState.snake.dir.x = myState.inputBuffer[0].x;
+    myState.snake.dir.y = myState.inputBuffer[0].y;
+
+    myState.inputBuffer.shift()
 }
 
 function updateCanvas(myState) {
@@ -494,17 +497,38 @@ function inputHandler(event, myState) { // event listeners for keydowns, stores 
         d: {x: 1, y: 0}
     }
 
-    myState.input = keys[event.key];
-    if(myState.input) {
-        if(myState.isPaused == true && myState.isFinished == false && getDirString(myState.input.x, myState.input.y) != "left") {
-            myState.isPaused = false;
-            startGameLoop(myState);
+    let input = keys[event.key]
+    if(myState.inputBuffer.length != myState.inputBufferSize) {
+        myState.inputBuffer.push(input);
+        let len = myState.inputBuffer.length;
+        if(len >= 2) {
+            if(checkOpposite(myState.inputBuffer[len-1], myState.inputBuffer[len-2])) {
+                myState.inputBuffer.pop();
+            }
+        } else {
+            if(checkOpposite(input, myState.snake.dir) || getDirString(input.x, input.y) == getDirString(myState.snake.dir.x, myState.snake.dir.y)) {
+                myState.inputBuffer.pop();
+            }
+        }
+    }
+    if(myState.inputBuffer[0]) {
+        if(myState.isPaused == true && myState.isFinished == false) {
+            if(getDirString(myState.inputBuffer[0].x, myState.inputBuffer[0].y) == "left") {
+                myState.inputBuffer.pop();
+            } else {
+                myState.isPaused = false;
+                startGameLoop(myState);
+            }
         }
     }
         
     // if(event.key=="p") { //TODO: furnish this
     //     pauseGame();
     // }
+}
+
+function checkOpposite(dir1, dir2) {
+    return getDirString(dir1.x, dir1.y) == getDirString(-dir2.x, -dir2.y);
 }
 
 function startGameLoop(myState) {
