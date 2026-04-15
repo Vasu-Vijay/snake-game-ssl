@@ -10,6 +10,7 @@ const IMMUNITY_TIME = 4000;
 const CANVAS_HEIGHT = 300;
 const CANVAS_WIDTH = 300;
 const REFRESH_RATE = 200;
+const GRAPHICS_REFRESH_RATE = 100;
 
 const image_elems={} //dict containing <image_path>:<html img elem> pairs
 
@@ -105,6 +106,7 @@ class GameState {
         this.input = null; //rate at which snake moves in ms
 
         this.refreshRate = REFRESH_RATE;
+        this.graphicsRefreshRate = GRAPHICS_REFRESH_RATE;
         this.startTime = undefined;
         this.deathTime = undefined;
         this.isPaused = true; //TODO: change it before commit
@@ -149,6 +151,8 @@ class Snake {
         this.immunityTime = 0;
         this.timeAlive = 0;
         this.prevTail = this.tail;
+
+        this.color = "main";
     }
 
     get isImmune() {
@@ -227,7 +231,7 @@ function drawSnake(myState) { // to draw the snake, with corresponding sprites, 
         }
 
         let [canvas_x, canvas_y] = myState.gtoc(s.x, s.y);
-        let imagePath = "../static/sprites/" + graphicsMode + "/" + s.sprite; // path = folder + base file name
+        let imagePath = "../static/sprites/" + graphicsMode + "/" + myState.snake.color + "/" + s.sprite; // path = folder + base file name
         myState.ctx.drawImage(image_elems[imagePath], canvas_x, canvas_y, myState.cellSize, myState.cellSize);
     }
 }
@@ -495,7 +499,7 @@ function inputHandler(event, myState) { // event listeners for keydowns, stores 
 function startGameLoop(myState) {
     if(myState.isPaused) { return; }
     myState.startTime = new Date();
-    gameLoop(myState);
+    gameLoop(myState, +new Date());
 }
 
 function consumeFruitAt(myState, x, y) {
@@ -605,12 +609,25 @@ function initGame(myState) {
     startGameLoop(myState); //TODO: change later
 }
 
-function gameLoop(myState) {
+function gameLoop(myState, prevTime) {
     if(myState.isPaused) { return; }
-    updateState(myState);
-    updateScoreHTML(myState);
+    let curTime = +new Date();
+    if(myState.snake.isImmune) {
+        if(myState.snake.immunityTime > 1000) {
+            myState.snake.color = "immune";
+        } else {
+            myState.snake.color == "main" ? myState.snake.color = "immune" : myState.snake.color = "main";
+        }
+    } else {
+        myState.snake.color = "main";
+    }
+    if(curTime - prevTime >= myState.refreshRate) {
+        updateState(myState);
+        updateScoreHTML(myState);
+        prevTime = curTime;
+    }
     updateCanvas(myState);
-    setTimeout(() => gameLoop(myState), myState.refreshRate);
+    setTimeout(() => gameLoop(myState, prevTime), myState.graphicsRefreshRate);
 }
 
 loadContent();
