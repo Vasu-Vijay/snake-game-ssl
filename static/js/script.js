@@ -15,6 +15,10 @@ const CANVAS_WIDTH = 300;
 const TICK_RATE = 200; //time in ms
 const GRAPHICS_REFRESH_RATE = 100;
 
+const N_ROWS = 4;
+const N_COLUMNS = 4;
+const CELL_SIZE = 60;
+
 const image_elems={} //dict containing <image_path>:<html img elem> pairs
 
 const turn_images=[["body_topleft.png","body_bottomleft.png"],     //-1,-1   -1,+1     {del_x, del_y values}
@@ -79,7 +83,7 @@ class User {
 const user = new User();
 
 class GameState {
-    constructor(nRows = 10, nColumns = 10, cellSize = 30) {
+    constructor(nRows = N_ROWS, nColumns = N_COLUMNS, cellSize = CELL_SIZE) {
         this.nRows = nRows;
         this.nColumns = nColumns;
         this.cellSize = cellSize;
@@ -87,14 +91,14 @@ class GameState {
         this.canvas = document.getElementById("game");
         this.ctx = this.canvas.getContext("2d");
 
-        this.scale = window.devicePixelRatio || 1
-        this.scale=2;
+        //this.scale = window.devicePixelRatio || 1
+        this.scale = 2;
 
-        this.canvas.width = CANVAS_WIDTH * this.scale
-        this.canvas.height = CANVAS_HEIGHT * this.scale
+        this.canvas.width = this.nColumns * this.cellSize * this.scale
+        this.canvas.height = this.nRows * this.cellSize * this.scale
 
-        this.canvas.style.width = `${CANVAS_WIDTH}px`
-        this.canvas.style.height = `${CANVAS_HEIGHT}px`
+        this.canvas.style.width = `${this.nColumns * this.cellSize}px`
+        this.canvas.style.height = `${this.nRows * this.cellSize}px`
 
         this.cellSize *= this.scale;
 
@@ -181,6 +185,10 @@ class Snake {
     immunityTicks(myState) {
         return Math.floor(this.immunityTime/myState.tickRate);
     }
+    
+    hasWon (myState) {
+        return this.length == myState.nColumns * myState.nRows;
+    }
 
     nextPos(myState) {
         let next_x = this.head.x + this.dir.x;
@@ -248,6 +256,10 @@ function drawSnake(myState) { // to draw the snake, with corresponding sprites, 
 }
 
 function spawnFruit(myState) { //decides a random fruit and a random empty coordinate, then calls drawFruit to draw the fruit at chosen position
+    if(myState.snake.length == myState.nColumns * myState.nRows - 1) {
+        return;
+    }
+    
     let cumWeights = {};
     let totalWeight = 0;
     let id = "carrot";
@@ -370,15 +382,18 @@ function executeFuneral(myState, cause) { // perform actions reqd after game end
         user.saveLatestRecord();
     }
 
-    document.getElementById("death-score").innerText = myState.score;
-    document.getElementById("death-cause").innerHTML = `Death by: ${cause}`;
     document.getElementById("death-high-score").innerHTML = user.highScore;
     document.getElementById("death-time-alive").innerHTML = myState.snake.timeAlive;
-
     document.getElementById("start-high-score").innerHTML = user.highScore;
+    document.getElementById("death-score").innerText = myState.score;
 
-    let endModal = new bootstrap.Modal(document.getElementById("endModal"));
-    endModal.show();
+    if(cause == "WON") {
+        document.getElementById("death-cause").innerHTML = `Death by: WINNING!!!`;
+    } else {
+        document.getElementById("death-cause").innerHTML = `Death by: ${cause}`;
+        let endModal = new bootstrap.Modal(document.getElementById("endModal"));
+        endModal.show();
+    }
 
     myState.destroy();  //TODO maybe add a proper reset function
 }
@@ -388,6 +403,12 @@ function updateState(myState) {
 
     myState.speedTicks = Math.max(0, myState.speedTicks - 1);
     if(myState.speedTicks == 0) { myState.tickRate = TICK_RATE; console.log("resetted!!")}
+    
+    if(myState.snake.hasWon(myState)) {
+        executeFuneral(myState, "WON");
+        console.log("Yay!!! You won!!!!!");
+        return;
+    }
 
     let [next_x, next_y] = myState.snake.nextPos(myState);
     myState.snake.growthBuffer += consumeFruitAt(myState, next_x, next_y);
@@ -601,9 +622,9 @@ function updateTail(myState){ // updates the sprite of the new tail and paints b
         tailDir.x = del_x;
         tailDir.y = del_y;
 
-        if(del_x== 9 || del_x == -9) {
+        if(del_x == myState.nColumns - 1 || del_x == -(myState.nColumns - 1)) {
             tailDir.x = (del_x > 0) ? -1 : +1;
-        } else if(del_y == 9 || del_y == -9) {
+        } else if(del_y == myState.nRows - 1 || del_y == -(myState.nRows - 1)) {
             tailDir.y = (del_y > 0) ? -1 : +1;
         }
     }
