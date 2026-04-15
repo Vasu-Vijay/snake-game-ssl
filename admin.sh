@@ -5,7 +5,8 @@
 user=all 
 #Different type of operations that can be performed from menu.
 operation=("Query_User" "Recent_Score" "Analytics" "Delete_Entries" "Log_Rotation" "Restore_Logs" "Sorted_View" "Exit")
-
+#first line of history.txt
+first_line="Timestamp,Username,Score,Cause_of_Death,Time_Survived"
 #To be used to store all users in history.txt
 function update_userlist(){
     user_list=":$(cut -d',' -f2 history.txt | sort -u | tr '\n' ':' )"
@@ -13,7 +14,7 @@ function update_userlist(){
 
 #To be used to validate if command entered is correct or not
 function valid_command(){
-    if [[ "$2" =~ ^[1-$1]$ || $2 == "q" || $2 == "\x1b" ]]; then 
+    if [[ "$2" =~ ^[1-$1]$ || "$2" == "q" || "$2" == $'\x1b' || "$2" == "" ]]; then 
         return 0
     else 
         return -1
@@ -163,6 +164,52 @@ function tabular_display(){
     print_border_bottom
 }
 
+function output_table(){ 
+    column -t -R 1,2,3,4,5 -s ","  -o " │ " |awk -F "│" '
+    {
+        lines[NR] = $0
+        if(length($0) > max ){ max = length($0)}
+        #stores the max field width in an array
+        for (f = 1; f <= 5; f++) {
+            if (length($f) > max_col[f]) {
+                max_col[f] = length($f) 
+            }
+        }
+    }
+    END {
+        #prints the upper border of table
+        printf "┌"
+        for (i = 1; i <= 5; i++) {
+            for (j = 1; j <= max_col[i]; j++) {printf "─"}
+            if (i < 5) printf "┬"
+        }
+        printf "┐\n"
+        #prints the records and border after it
+        for(l=1;l<NR;l++){
+            printf "│"
+            printf lines[l]
+            printf "│\n"
+            printf "├"
+            for (i = 1; i <= 5; i++) {
+                for (j = 1; j <= max_col[i]; j++) {printf "─"}
+                if (i < 5) printf "┼"
+            }
+            printf "┤\n"
+        }
+        printf "│"
+        printf lines[l]
+        printf "│\n"
+        printf "└"
+
+        #prints the lower border of table
+        for (i = 1; i <= 5; i++) {
+            for (j = 1; j <= max_col[i]; j++) {printf "─"}
+            if (i < 5) printf "┴"
+        }
+        printf "┘\n"       
+    }
+    ' | less
+}
 
 #Displays menu with selectable operations on terminal.
 function menu_display(){
@@ -272,24 +319,25 @@ function Sorted_View(){
             printf "\e[31mPlease enter a valid Command\e[0m\n"
         fi        
         done
-        if [[ "$command" == 2 ]];then
-            sort -fbdr -t "," -k2,2 -k3,3nr -k5,5 history.txt | less
-        elif [[ "$command" == 'q' || "$command" == $'\x1b' ]];then {
+        if [[ "$command" == 2 ]];then {
+            #outputs the top line of history.txt and then sort and then send both to output table
+            { echo "$first_line";sort -fbdr -t "," -k2,2 -k3,3nr -k5,5 history.txt;} | output_table 
+        } elif [[ "$command" == 'q' || "$command" == $'\x1b' ]];then {
             printf "\033c"
             return
         } else {
-            sort -fbd -t "," -k2,2 -k3,3nr -k5,5 history.txt | less
+            { echo "$first_line";sort -fbd -t "," -k2,2 -k3,3nr -k5,5 history.txt;} | output_table
         }
         fi
     elif [[ "$key" == '2' ]];then {
-        sort -rnt "," -k 5 history.txt | less
+        { echo "$first_line"; sort -rnt "," -k 5,5  history.txt;} | output_table
     } elif [[ "$key" == '3' ]];then {
-        sort -rnt "," -k 3,3 history.txt | less
+        { echo "$first_line"; sort -rnt "," -k 3,3 history.txt;} | output_table
     } elif [[ "$key" == 'q' || "$key" == $'\x1b' ]];then {
         printf "\033c"
         menu_display
     } else {
-        sort -rt "," -k 1 history.txt | less
+        { echo "$first_line";sort -rt "," -k 1 history.txt;} | output_table
     } fi 
 
     printf "\033c"
