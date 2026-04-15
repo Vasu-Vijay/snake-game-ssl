@@ -7,8 +7,8 @@ const fruits = {
 var graphicsMode = "classic";
 
 const IMMUNITY_TIME = 4000;
-const CANVAS_HEIGHT = 450;
-const CANVAS_WIDTH = 450;
+const CANVAS_HEIGHT = 300;
+const CANVAS_WIDTH = 300;
 const REFRESH_RATE = 200;
 
 const image_elems={} //dict containing <image_path>:<html img elem> pairs
@@ -83,8 +83,17 @@ class GameState {
         this.canvas = document.getElementById("game");
         this.ctx = this.canvas.getContext("2d");
 
-        this.canvas.width = CANVAS_WIDTH;
-        this.canvas.height = CANVAS_HEIGHT;
+        this.scale = window.devicePixelRatio || 1
+        this.scale=2;
+
+        this.canvas.width = CANVAS_WIDTH * this.scale
+        this.canvas.height = CANVAS_HEIGHT * this.scale
+
+        this.canvas.style.width = `${CANVAS_WIDTH}px`
+        this.canvas.style.height = `${CANVAS_HEIGHT}px`
+
+        this.cellSize *= this.scale;
+
         this.ctx.imageSmoothingEnabled = true;
         this.ctx.imageSmoothingQuality = "high";
 
