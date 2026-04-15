@@ -478,14 +478,25 @@ function setupInput(myState) {
 
 function inputHandler(event, myState) { // event listeners for keydowns, stores the dir vector in move
     const keys = {
-        ArrowUp: { x: 0, y: -1},
-        ArrowDown: { x: 0, y: 1},
-        ArrowRight: { x: 1, y: 0},
-        ArrowLeft: { x: -1, y: 0}
+        ArrowUp: {x: 0, y: -1},
+        ArrowDown: {x: 0, y: 1},
+        ArrowRight: {x: 1, y: 0},
+        ArrowLeft: {x: -1, y: 0},
+
+        W: {x: 0, y: -1},
+        A: {x: -1, y: 0},
+        S: {x: 0, y: 1},
+        D: {x: 1, y: 0},
+
+        w: {x: 0, y: -1},
+        a: {x: -1, y: 0},
+        s: {x: 0, y: 1},
+        d: {x: 1, y: 0}
     }
+
     myState.input = keys[event.key];
     if(myState.input) {
-        if(myState.isPaused == true && myState.isFinished == false) {
+        if(myState.isPaused == true && myState.isFinished == false && getDirString(myState.input.x, myState.input.y) != "left") {
             myState.isPaused = false;
             startGameLoop(myState);
         }
