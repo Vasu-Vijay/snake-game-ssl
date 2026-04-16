@@ -644,7 +644,7 @@ function initGame(myState) {
     startGameLoop(myState); //TODO: change later
 }
 
-function gameLoop(myState, lastStateUpdate = performance.now(), lastCanvasUpdate = performance.now()) {
+function gameLoop(myState, lastStateUpdate = 0, lastCanvasUpdate = 0) {
     if(myState.isPaused) { return; }
 
     let curTime = performance.now();
