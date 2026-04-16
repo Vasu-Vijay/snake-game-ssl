@@ -516,8 +516,10 @@ function inputHandler(event, myState) { // event listeners for keydowns, stores 
             if(input.x == 1 && input.y == 0) {
                 myState.inputBuffer.push(input);
             }
-            myState.isPaused = false;
-            startGameLoop(myState);
+            if(!(input.x == -1 && input.y == 0)){
+                myState.isPaused = false;
+                startGameLoop(myState);
+            }
         }
     }
         
