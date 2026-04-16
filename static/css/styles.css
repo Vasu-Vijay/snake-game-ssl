@@ -26,9 +26,6 @@ body {
     border-radius: 0;
 }
 
-.cell-label {
-    background-color: #76D7C4 !important;
-}
 .btn {
     border-radius: 0;
     box-shadow: 5px 5px 0 black;
@@ -43,6 +40,19 @@ body {
     border: none;
     font-size: 20px;
     color: #0505f5;
+    background-color: #76D7C4 ;
+}
+
+.table-container td,th{
+    border: none;
+    text-align: center;
+}
+
+.table-container th {
+    text-align: center;
+    color: #e87523;
+    background-color: #76D7C4;
+    font-size: 1.3rem;
 }
 
 .modal-title {
@@ -55,4 +65,20 @@ body {
     border-radius: 0;
     background: #76D7C4;
     font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.table-container {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.modal-body { /* Used in Firefox browser */
+    scrollbar-width: thin;
+    scrollbar-color: #cf787c transparent; 
+}
+
+/* For other browser like chrome,safari,edge,etc.. */
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cf787c;
+    border-radius: 10px;
 }
