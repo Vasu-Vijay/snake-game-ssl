@@ -502,7 +502,7 @@ function inputHandler(event, myState) { // event listeners for keydowns, stores 
         myState.inputBuffer.push(input);
         let len = myState.inputBuffer.length;
         if(len >= 2) {
-            if(checkOpposite(myState.inputBuffer[len-1], myState.inputBuffer[len-2])) {
+            if(checkOpposite(input, myState.inputBuffer[len-2]) || getDirString(input.x, input.y) == getDirString(myState.inputBuffer[len-2].x, myState.inputBuffer[len-2].y)) {
                 myState.inputBuffer.pop();
             }
         } else {
@@ -511,14 +511,13 @@ function inputHandler(event, myState) { // event listeners for keydowns, stores 
             }
         }
     }
-    if(myState.inputBuffer[0]) {
+    if(input) {
         if(myState.isPaused == true && myState.isFinished == false) {
-            if(getDirString(myState.inputBuffer[0].x, myState.inputBuffer[0].y) == "left") {
-                myState.inputBuffer.pop();
-            } else {
-                myState.isPaused = false;
-                startGameLoop(myState);
+            if(input.x == 1 && input.y == 0) {
+                myState.inputBuffer.push(input);
             }
+            myState.isPaused = false;
+            startGameLoop(myState);
         }
     }
         
