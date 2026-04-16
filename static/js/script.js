@@ -108,6 +108,7 @@ class GameState {
 
         this.tickRate = TICK_RATE;
         this.graphicsRefreshRate = GRAPHICS_REFRESH_RATE;
+        this.startTimeUNIX = undefined;
         this.startTime = undefined;
         this.deathTime = undefined;
         this.isPaused = true; //TODO: change it before commit
@@ -324,7 +325,7 @@ function updateCanvas(myState) {
     if(myState.snake.tailChanged) {
         drawBackground(myState, myState.snake.prevTail.x, myState.snake.prevTail.y);
     }
-    
+
     drawSnake(myState);
     myState.food.forEach((fruit) => {
         drawFruit(myState, fruit.id, fruit.x, fruit.y);
@@ -351,10 +352,10 @@ function getDeathCause(myState) { // check death according to current pos and di
 
 function executeFuneral(myState, cause) { // perform actions reqd after game end
     myState.isPaused = true; //???
-    myState.deathTime = new Date();
+    myState.deathTime = performance.now();
 
-    let st = myState.startTime;
-    myState.snake.timeAlive = myState.deathTime.getTime() - myState.startTime.getTime();
+    let st = myState.startTimeUNIX;
+    myState.snake.timeAlive = myState.deathTime - myState.startTime;
 
     let pad = (n) => String(n).padStart(2, '0');
     let formattedStartTime = `[${st.getFullYear()}-${pad(st.getMonth()+1)}-${pad(st.getDate())} ${pad(st.getHours())}:${pad(st.getMinutes())}:${pad(st.getSeconds())}]`;
@@ -526,8 +527,9 @@ function checkOpposite(dir1, dir2) {
 
 function startGameLoop(myState) {
     if(myState.isPaused) { return; }
-    myState.startTime = new Date();
-    gameLoop(myState, +new Date(), +new Date());
+    myState.startTimeUNIX = new Date();
+    myState.startTime = performance.now();
+    gameLoop(myState);
 }
 
 function consumeFruitAt(myState, x, y) {
@@ -623,7 +625,7 @@ function ateCarrots(fruit, myState) {
 }
 function ateGoldenApple(fruit, myState) {
     myState.snake.immunityTime += IMMUNITY_TICKS * myState.tickRate;
-    myState.snake.immunityStartTime = +new Date();
+    myState.snake.immunityStartTime = performance.now();
     myState.snake.color = "immune";
     playSound("immuneOn");
 }
@@ -642,10 +644,10 @@ function initGame(myState) {
     startGameLoop(myState); //TODO: change later
 }
 
-function gameLoop(myState, lastStateUpdate, lastCanvasUpdate) {
+function gameLoop(myState, lastStateUpdate = performance.now(), lastCanvasUpdate = performance.now()) {
     if(myState.isPaused) { return; }
 
-    let curTime = +new Date();
+    let curTime = performance.now();
     if(curTime - lastStateUpdate > myState.tickRate) {
         updateState(myState);
         lastStateUpdate = curTime;
