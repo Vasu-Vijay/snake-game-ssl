@@ -9,7 +9,7 @@ operation=("Query_User" "Recent_Score" "Analytics" "Delete_Entries" "Log_Rotatio
 first_line="Timestamp,Username,Score,Cause_of_Death,Time_Survived"
 #To be used to store all users in history.txt
 function update_userlist(){
-    user_list=":$(cut -d',' -f2 history.txt | sort -u | tr '\n' ':' )"
+    user_list=":$(tail -n +2 history.txt | cut -d',' -f2 | sort -u | tr '\n' ':' )"
 }
 
 #To be used to validate if command entered is correct or not
@@ -48,8 +48,9 @@ function Validate_Timestamp(){
 function tabular_display(){
     COLS=3 
     PADDING=1
-    
-    COL_WIDTH=$(($(tput cols) / COLS - 1)) #$COLUMNS does not work as it needs to be run in terminal. $tput cols handles it as long as terminal is active
+
+    # -2 because we will have to add cols + 1 characters for start,middle ,end
+    COL_WIDTH=$(($(tput cols) / COLS - 2)) #$COLUMNS does not work as it needs to be run in terminal. $tput cols handles it as long as terminal is active
     # Used to wrap text such that it stays in a block in menu
     function wrap_text() {
         fold -s -w $((COL_WIDTH - 2*PADDING)) <<<"$1"
@@ -168,7 +169,6 @@ function output_table(){
     column -t -R 1,2,3,4,5 -s ","  -o " │ " |awk -F "│" '
     {
         lines[NR] = $0
-        if(length($0) > max ){ max = length($0)}
         #stores the max field width in an array
         for (f = 1; f <= 5; f++) {
             if (length($f) > max_col[f]) {
@@ -263,23 +263,24 @@ function Query_User(){
 function Recent_Score(){
     printf "\033c"
     if [ "$user" == "all" ]; then {
-        sort -r history.txt | less
+        (echo "$first_line"; tail -n +2 history.txt |sort -r ) | output_table
     } else {
-        sort -r history.txt | awk -F "," -v user="$user" '
+        (echo "$first_line"; tail -n +2 history.txt | sort -r ) | awk -F "," -v user="$user" '
             {
-                if($2 == user){
+                if(NR ==1 ) {print $0}
+                else if($2 == user){
                     printf $0 "\n"
                 }
             }
-        ' | less
+        ' | output_table
     } fi
 }
 
 #Perform Log Rotation by saving last 10 entries of history.txt
 function Log_Rotation(){
-    tail -10 history.txt > history.tmp
+    tail -n +2 history.txt| tail -10 > history.tmp
     tar -czf history.tar.gz history.txt
-    mv history.tmp history.txt
+    (echo "$first_line"; cat history.tmp) > history.txt
     
     printf "\033c"
     printf "\e[32mLogs have been backed up\e[0m\n"
@@ -296,11 +297,11 @@ function Sorted_View(){
     printf "\033c"
 
     while true; do 
-        options=("1] User" "2] Time survived" "3] Score")
+        options=("1] User" "2] Time survived" "3] Score" "4] Time Stamp{default}")
         tabular_display
         read -e -n 1 -p $'\e[33mSelect a specific feature to filter : \e[0m' key
         printf "\n"
-        if valid_command 3 $key; then
+        if valid_command 4 $key; then
             break
         else 
             printf "\033c" 
@@ -321,23 +322,23 @@ function Sorted_View(){
         done
         if [[ "$command" == 2 ]];then {
             #outputs the top line of history.txt and then sort and then send both to output table
-            { echo "$first_line";sort -fbdr -t "," -k2,2 -k3,3nr -k5,5 history.txt;} | output_table 
+            { echo "$first_line";tail -n +2 history.txt | sort -fbdr -t "," -k2,2 -k3,3nr -k5,5 ;} | output_table 
         } elif [[ "$command" == 'q' || "$command" == $'\x1b' ]];then {
             printf "\033c"
             return
         } else {
-            { echo "$first_line";sort -fbd -t "," -k2,2 -k3,3nr -k5,5 history.txt;} | output_table
+            { echo "$first_line";tail -n +2 history.txt | sort -fbd -t "," -k2,2 -k3,3nr -k5,5 ;} | output_table
         }
         fi
     elif [[ "$key" == '2' ]];then {
-        { echo "$first_line"; sort -rnt "," -k 5,5  history.txt;} | output_table
+        { echo "$first_line";tail -n +2 history.txt | sort -rnt "," -k 5,5;} | output_table
     } elif [[ "$key" == '3' ]];then {
-        { echo "$first_line"; sort -rnt "," -k 3,3 history.txt;} | output_table
+        { echo "$first_line";tail -n +2 history.txt | sort -rnt "," -k 3,3;} | output_table
     } elif [[ "$key" == 'q' || "$key" == $'\x1b' ]];then {
         printf "\033c"
         menu_display
     } else {
-        { echo "$first_line";sort -rt "," -k 1 history.txt;} | output_table
+        { echo "$first_line";tail -n +2 history.txt |sort -rt "," -k 1;} | output_table
     } fi 
 
     printf "\033c"
@@ -348,7 +349,8 @@ function Analytics(){
     printf "\033c"  
     if [[ $user != "all" ]]; then
         awk -F "," -v user="$user" '{
-            if($2 == user){
+            if(NR==1) {print $0}
+            else if($2 == user){
                 print $0
             }
         }' history.txt > history.tmp #created a history.tmp file to be used to read only specific users
@@ -356,7 +358,7 @@ function Analytics(){
         cp history.txt history.tmp #created a history.tmp file to match above format if all users are to be analysed
     fi
     #Showing Analysis of Games of the users
-    sort -t "," -k 2 history.tmp | awk -F "," '
+    tail -n +2 history.tmp |sort -t "," -k 2 | awk -F "," '
                 {   
                     if(NR == 1){ 
                         if($0 ~ /^$/){
@@ -424,7 +426,8 @@ function Delete_Entries(){
         if [[ $confirmation == "y" ]]; then
             awk -F "," -v user="$player" '
                 {
-                    if($2 != user){
+                    if (NR==1) {print $0}
+                    else if($2 != user){
                         print $0
                     }
                 }' history.txt > history.tmp
@@ -447,7 +450,8 @@ function Delete_Entries(){
                 if [[ $confirmation == "y" ]]; then
                     awk -F "," -v timestamp="[$timestamp]" '
                         {
-                            if($1 <= timestamp){
+                            if(NR == 1) {print $0}
+                            else if($1 <= timestamp){
                                 print $0
                             }
                         }
@@ -466,7 +470,8 @@ function Delete_Entries(){
                 if [[ $confirmation == "y" ]]; then
                     awk -F "," -v timestamp="[$timestamp]" '
                         {
-                            if($1 >= timestamp){
+                            if(NR==1) {print $0}
+                            else if($1 >= timestamp){
                                 print $0
                             }
                         }
@@ -491,7 +496,8 @@ function Delete_Entries(){
     #Does not verify If date is correct or not 
     elif [[ $method == 3 ]]; then
         awk -F "," '{
-            if ($0 ~ /^\[[0-9]+-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\],[^,]+,[0-9]+,[A-Z]+,[0-9]+$/) {
+            if (NR==1){print $0}
+            else if ($0 ~ /^\[[0-9]+-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\],[^,]+,[0-9]+,[A-Z]+,[0-9]+$/) {
                 if ($4 !~ /(WALL|SELF)/){}
                 else {print $0}
             }
@@ -503,7 +509,7 @@ function Delete_Entries(){
 }
 
 update_userlist
-history -c
+history -c #prevents terminal history to be accessed in the process
 printf "\033c"
 #Display menu untill not exited
 while true; do
