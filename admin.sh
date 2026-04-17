@@ -6,7 +6,7 @@ user=all
 #Different type of operations that can be performed from menu.
 operation=("Query_User" "Recent_Score" "Analytics" "Delete_Entries" "Log_Rotation" "Restore_Logs" "Sorted_View" "Exit")
 #first line of history.txt
-first_line="Timestamp,Username,Score,Cause_of_Death,Time_Survived"
+first_line="start_time,username,score,cause,time_alive"
 #To be used to store all users in history.txt
 function update_userlist(){
     user_list=":$(tail -n +2 history.txt | cut -d',' -f2 | sort -u | tr '\n' ':' )"
@@ -508,6 +508,9 @@ function Delete_Entries(){
     fi
 }
 
+[ ! -f "history.txt" ] && printf "\033c" && printf "\e[31mhistory.txt file not found.\e[0m\n" && exit
+[[ $(head -1 history.txt) != "$first_line" ]] && printf "\033c" && printf "\e[31mInvalid file format.\e[0m\n" && exit
+[[ $(head -1 history.txt) == "$first_line" ]] && [[ $(wc -l history.txt | cut -d " " -f 1) -eq 1 ]] && printf "\033c" && printf "\e[31mhistory.txt has no records stored.\e[0m\n" && exit
 update_userlist
 history -c #prevents terminal history to be accessed in the process
 printf "\033c"
