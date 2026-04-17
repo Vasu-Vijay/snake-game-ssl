@@ -82,3 +82,9 @@ body {
     background: #cf787c;
     border-radius: 10px;
 }
+
+.icon {
+    margin-right: 4px;
+    height: 1em;
+    width: 1em;
+}

@@ -56,8 +56,8 @@
 
                     <div class="d-flex justify-content-between">
                         <button class="btn btn-primary" data-bs-target="#rulesModal" data-bs-toggle="modal"
-                            data-bs-dismiss="modal">Rules</button>
-                        <button class="btn btn-primary" id="startbtn">Start Game</button>
+                            data-bs-dismiss="modal"><img src="../static/media/ui/rules.png"class="icon">Rules</button>
+                        <button class="btn btn-primary" id="startbtn"><img src="../static/media/ui/play_button.png"class="icon">Start Game</button>
                     </div>
 
                 </div>
@@ -72,16 +72,19 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3 border-3 border-dark">
                 <div class="modal-header">
-                    <h5 class="modal-title w-100 text-center">Game Rules</h5>
+                    <h5 class="modal-title w-100 text-center"><img src="../static/media/ui/rules.png"class="icon"> Game Rules</h5>
                 </div>
 
                 <div class="modal-body">
                     <ul>
-                        <li>Use arrow keys to move the snake</li>
+                        <li>Use arrow keys or WASD to move the snake</li>
                         <li>Eat food to grow longer</li>
                         <li>Avoid hitting walls</li>
                         <li>Avoid colliding with yourself</li>
-                        <li>Score increases with each food eaten</li>
+                        <li><img src="../static/media/sprites/fruits/carrot.png" class="icon"> score : +1</li>
+                        <li><img src="../static/media/sprites/fruits/triplecarrot.png" class="icon"> score : +3</li>
+                        <li><img src="../static/media/sprites/fruits/goldenapple.png" class="icon"> grants immunity for 4 seconds</li>
+                        <li>When Immunity is about to expire, the snake will blink</li>
                     </ul>
                 </div>
 

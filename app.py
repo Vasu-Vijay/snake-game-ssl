@@ -14,7 +14,7 @@ def list_files_scandir(path='.'): # recursively find files in ./static/sprites f
                 list_files_scandir(entry.path)
 
 def write_data():
-    directory_path = './static/sprites'
+    directory_path = './static/media/sprites'
     list_files_scandir(directory_path)
 
     file_path = "./static/js/data.js"
