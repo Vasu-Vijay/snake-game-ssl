@@ -1,34 +1,77 @@
 body {
     font-size: 20px;
-    color: #0505f5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     background: #c1ff72;
 }
 
+#scoreDisplayer{
+    font-size: 32px;
+    color:#5400ff ;
+}
+#timeDisplayer {
+    color:#5400ff
+}
+
+#immunityContainer {
+    color:#efbf04 ;
+}
+
+#immunityBar {
+    background: #f99ca5cc
+}
+#displays {
+    width: 450px;
+}
+
+.progress-bar {
+    transition: 0.15s linear;
+}
+
+label.form-label {
+    color:#0505f5
+}
+
+#usernameError {
+    color: #ff0000;
+}
+
+#rulesModal li {
+    color: #0505f5;
+}
+
+
 .game-over {
+    animation: pulseText 1.5s infinite ease-in-out;
     font-size: 28px;
     font-weight: bold;
     color: #ff0000 !important;
 }
 
-#deathCause {
-    font-size: 24px;
-    font-weight: bold;
-    color: rgb(219, 235, 1);
-}
-.hidden {
-    display: none;
+@keyframes pulseText {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
-.form-label, .form-select,.form-control {
-    border-radius: 0;
+#death-cause {
+    font-size: 24px;
+    font-weight: bold;
+    color: #e0f000;
+}
+
+.hidden {
+    display: none;
 }
 
 .btn {
     border-radius: 0;
     box-shadow: 5px 5px 0 black;
+    transition: transform 0.15s , box-shadow 0.15s linear;
 }
 
 .btn:hover{

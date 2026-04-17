@@ -8,14 +8,23 @@
 </head>
 
 <body>
-    <div id="mainBody" class="hidden">
+    <div id="mainBody" class="hidden d-flex flex-column align-items-center gap-2">
+            <p id="scoreDisplayer" class="fw-bold">Score: 2</p>
         <div id="gameBody">
-            <canvas id="game"></canvas>
+            <canvas id="game" height="450px" width="450px" class="border border-3 border-dark rounded-0"></canvas>
         </div>
-        <div id="displays">
-            <p id="scoreDisplayer">Score: 2</p>
-            <p id="timeDisplayer">Time: 0.000s</p>
-            <p id="immunityTimeDisplayer">Immunity Time: 0s</p>
+        <div id="displays" class="text-center fs-4">
+            <p id="timeDisplayer" class="fw-bold">Time: 0.000s</p>
+            <div id="immunityContainer" class="w-100 mt-2">
+                <div class="d-flex justify-content-between fw-bold mb-1">
+                    <span>Immunity</span>
+                    <span id="immunityTimeDisplayer">0s</span><!--TODO: Updation to be fixed by JS-->
+                </div>
+                <!--TODO: immunity-bar width to be controlled by JS-->
+                <div class="progress border border-2 border-dark rounded-5" style="height: 20px;">
+                    <div id="immunityBar" class="progress-bar bg-danger" style="width: 15%;"> </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -32,8 +41,8 @@
                 <div class="modal-body">
 
                     <div class="mb-3 start">
-                        <label class="form-label">Enter Username</label> <!--TO DO : Validation-->
-                        <input type="text" id="username" class="form-control" placeholder="Your name" value="guest_user">
+                        <label class="form-label rounded-0">Enter Username</label> <!--TO DO : Validation-->
+                        <input type="text" id="username" class="form-control rounded-0" placeholder="Your name" value="guest_user">
                         <p id="usernameError" class="hidden"></p>
                     </div>
 
@@ -47,8 +56,8 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Select Mode</label>
-                        <select id="mode" class="form-select">
+                        <label class="form-label rounded-0">Select Mode</label>
+                        <select id="mode" class="form-select rounded-0">
                             <option value="classic">Classic</option>
                             <option value="cyberpunk">Cyberpunk</option>
                         </select>
@@ -101,7 +110,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3 border-3 border-dark">
                 <div class="modal-header">
-                    <h5 class="modal-title w-100 text-center game-over" >Game Over !!</h5>
+                    <h5 class="modal-title w-100 text-center game-over monospace" >Game Over !!</h5>
                 </div>
 
                 <div class="modal-body">
