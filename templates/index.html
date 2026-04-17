@@ -40,8 +40,8 @@
                     <div class="retry mb-3 hidden">
                         <table class="table">
                             <tr>
-                                <td class="cell-label">High Score</td>
-                                <td class="cell-label" id="start-high-score">0</td>
+                                <td >High Score</td>
+                                <td class=" high-score" id="start-high-score">0</td>
                             </tr>
                         </table>
                     </div>
@@ -70,7 +70,7 @@
     <!--Rules Modal-->
     <div class="modal fade" id="rulesModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content p-3">
+            <div class="modal-content p-3 border-3 border-dark">
                 <div class="modal-header">
                     <h5 class="modal-title w-100 text-center">Game Rules</h5>
                 </div>
@@ -86,7 +86,7 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-target="#startModal" data-bs-dismiss="modal"
+                    <button class="btn btn-primary" data-bs-target="#startModal" data-bs-dismiss="modal"
                         data-bs-toggle="modal">Close</button>
                 </div>
             </div>
@@ -96,7 +96,7 @@
     <!--End Modal-->
     <div class="modal fade" id="endModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content p-3">
+            <div class="modal-content p-3 border-3 border-dark">
                 <div class="modal-header">
                     <h5 class="modal-title w-100 text-center game-over" >Game Over !!</h5>
                 </div>
@@ -105,26 +105,57 @@
                     <h5 id="death-cause" class="text-center">Death by: </h5>
                     <table id="deathStats" class="table">
                         <tr>
-                            <td class="cell-label">High Score</td>
-                            <td class="cell-label" id="death-high-score">0</td>
+                            <td>High Score</td>
+                            <td class="high-score" id="death-high-score">0</td>
                         </tr>
                         <tr>
-                            <td class="cell-label">Score</td>
-                            <td class="cell-label" id="death-score">0</td>
+                            <td>Score</td>
+                            <td id="death-score">0</td>
                         </tr>
                         <tr>
-                            <td class="cell-label">Time Survived</td>
-                            <td class="cell-label" id="death-time-alive">0</td> 
+                            <td>Time Survived</td>
+                            <td id="death-time-alive">0</td> 
                         </tr>
                     </table>
 
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    <button class="btn btn-success" data-bs-target="#startModal" data-bs-dismiss="modal"
+                    <button class="btn btn-primary" data-bs-target="#startModal" data-bs-dismiss="modal"
                         data-bs-toggle="modal">Retry</button>
                     <!--Opens Start Modal but changes a few elements resembling retry modal-->
-                    <button class="btn btn-success">Show Stats</button>
+                    <button class="btn btn-primary" data-bs-target="#statsModal" data-bs-dismiss="modal" data-bs-toggle="modal">Show Stats</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Stats Modal-->
+    <div class="modal fade" id="statsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3 border-3 border-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title w-100 text-center">Game Stats</h5>
+                </div>
+                <div class="modal-body">
+                    <h4 class="w-100 text-center" >High Score :<span class="high-score ms-3">0</span></h4>
+                    <div class="table-container">
+                    <table class="table" id="game-stats">
+                        <thead class="sticky-top">
+                            <tr>
+                                <th>Score</th>
+                                <th>Time</th>
+                                <th>Death-Cause</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-bs-target="#endModal" data-bs-dismiss="modal" data-bs-toggle="modal">Close</button>
                 </div>
             </div>
         </div>
