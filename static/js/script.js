@@ -1,12 +1,15 @@
 const fruits = {
     "carrot": {name:"Carrot", score:1, sprite: "../static/sprites/fruits/carrot.png", rel_probability: 1, onEat: ateCarrots},
-    "triplecarrot": {name:"Triple Carrot", score:3, sprite:"../static/sprites/fruits/three_carrots.png", rel_probability: 1, onEat: ateCarrots}, //TODO: image to be replaced, probability to be written
-    "goldenapple": {name:"Golden Apple", score:0, sprite:"../static/sprites/fruits/golden_apple.png", rel_probability: 1, onEat: ateGoldenApple} //TODO: image to be made, also fix probability
+    "triplecarrot": {name:"Triple Carrot", score:3, sprite:"../static/sprites/fruits/triplecarrot.png", rel_probability: 1, onEat: ateCarrots}, //TODO: probability to be written
+    "goldenapple": {name:"Golden Apple", score:0, sprite:"../static/sprites/fruits/goldenapple.png", rel_probability: 1, onEat: ateGoldenApple}, //TODO: fix probability
+    "speedupfruit": {name: "Energy", score: 1, sprite:"../static/sprites/fruits/speedupfruit.png", rel_probability: 5, onEat: ateSpeedUp}
 }
 
 var graphicsMode = "classic";
 
 const IMMUNITY_TICKS = 20;
+const SPEEDUP_TICKS = 20;
+const SPEEDUP_FACTOR = 2;
 const CANVAS_HEIGHT = 300;
 const CANVAS_WIDTH = 300;
 const TICK_RATE = 200; //time in ms
@@ -115,9 +118,11 @@ class GameState {
         this.gameLoopId = null;
 
         this.food = [];
-        this.fruitsUsed = ["carrot", "triplecarrot", "goldenapple"];
+        this.fruitsUsed = Object.keys(fruits);
 
         this.inputHandlerFunction = null;
+
+        this.speedTicks = 0;
     }
 
     get isFinished() {
@@ -381,6 +386,9 @@ function executeFuneral(myState, cause) { // perform actions reqd after game end
 function updateState(myState) {
     updateDir(myState);
 
+    myState.speedTicks = Math.max(0, myState.speedTicks - 1);
+    if(myState.speedTicks == 0) { myState.tickRate = TICK_RATE; console.log("resetted!!")}
+
     let [next_x, next_y] = myState.snake.nextPos(myState);
     myState.snake.growthBuffer += consumeFruitAt(myState, next_x, next_y);
 
@@ -628,6 +636,11 @@ function ateGoldenApple(fruit, myState) {
     myState.snake.immunityStartTime = performance.now();
     myState.snake.color = "immune";
     playSound("immuneOn");
+}
+
+function ateSpeedUp(fruit, myState) {
+    myState.tickRate /= SPEEDUP_FACTOR;
+    myState.speedTicks += SPEEDUP_TICKS;
 }
 
 function resetUI(myState) {
