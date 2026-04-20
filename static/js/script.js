@@ -6,10 +6,10 @@ const fruits = {
 
 var graphicsMode = "classic";
 
-const IMMUNITY_TIME = 4000;
+const IMMUNITY_TICKS = 20;
 const CANVAS_HEIGHT = 300;
 const CANVAS_WIDTH = 300;
-const REFRESH_RATE = 200;
+const TICK_RATE = 200; //time in ms
 const GRAPHICS_REFRESH_RATE = 100;
 
 const image_elems={} //dict containing <image_path>:<html img elem> pairs
@@ -106,8 +106,9 @@ class GameState {
         this.inputBuffer = [];
         this.inputBufferSize = 3;
 
-        this.refreshRate = REFRESH_RATE;
+        this.tickRate = TICK_RATE;
         this.graphicsRefreshRate = GRAPHICS_REFRESH_RATE;
+        this.startTimeUNIX = undefined;
         this.startTime = undefined;
         this.deathTime = undefined;
         this.isPaused = true; //TODO: change it before commit
@@ -150,6 +151,7 @@ class Snake {
         this.prevdir = {x: 1, y: 0};
 
         this.immunityTime = 0;
+        this.immunityStartTime = undefined;
         this.timeAlive = 0;
         this.prevTail = this.tail;
 
@@ -170,6 +172,10 @@ class Snake {
         return this.body[this.length - 1];
     }
     
+    immunityTicks(myState) {
+        return Math.floor(this.immunityTime/myState.tickRate);
+    }
+
     nextPos(myState) {
         let next_x = this.head.x + this.dir.x;
         let next_y = this.head.y + this.dir.y;
@@ -308,13 +314,23 @@ function updateDir(myState){ //changes dir variable according to the last key pr
 }
 
 function updateCanvas(myState) {
+    if(myState.snake.isImmune) {
+        if(myState.snake.immunityTicks(myState) < 5) {
+            myState.snake.color == "main" ? myState.snake.color = "immune" : myState.snake.color = "main";
+        }
+    } else {
+        myState.snake.color = "main";
+    }
+
     if(myState.snake.tailChanged) {
         drawBackground(myState, myState.snake.prevTail.x, myState.snake.prevTail.y);
     }
+
     drawSnake(myState);
     myState.food.forEach((fruit) => {
         drawFruit(myState, fruit.id, fruit.x, fruit.y);
     });
+
 }
 
 function getDeathCause(myState) { // check death according to current pos and dir
@@ -336,10 +352,10 @@ function getDeathCause(myState) { // check death according to current pos and di
 
 function executeFuneral(myState, cause) { // perform actions reqd after game end
     myState.isPaused = true; //???
-    myState.deathTime = new Date();
+    myState.deathTime = performance.now();
 
-    let st = myState.startTime;
-    myState.snake.timeAlive = myState.deathTime.getTime() - myState.startTime.getTime();
+    let st = myState.startTimeUNIX;
+    myState.snake.timeAlive = myState.deathTime - myState.startTime;
 
     let pad = (n) => String(n).padStart(2, '0');
     let formattedStartTime = `[${st.getFullYear()}-${pad(st.getMonth()+1)}-${pad(st.getDate())} ${pad(st.getHours())}:${pad(st.getMinutes())}:${pad(st.getSeconds())}]`;
@@ -441,30 +457,7 @@ function start() {
         isFirst = false;
     }
     initGameState();
-    updateTimeDisplays(+new Date());
 }
-
-function updateTimeDisplays(prevTime) { //TODO: ~~~~!!!!!!!!!!!! change the logic to do floor to the refresh rate otherwise unfair leaderboard !!!!!!!!!!!!!!!!!!!!~~~~~
-    let currentTime = +new Date();
-    if(!myState.isPaused) {
-        if(!prevTime) {
-            prevTime = +new Date();
-        }
-        let dt = currentTime - prevTime;
-        myState.snake.timeAlive += dt;
-        document.getElementById("timeDisplayer").innerHTML = `Time: ${myState.snake.timeAlive/1000}s`;
-        if(myState.snake.isImmune) {
-            let formattedImmunityTime = String(Math.trunc(myState.snake.immunityTime/100)/10).padEnd(3, ".0");
-            document.getElementById("immunityTimeDisplayer").innerHTML = `Immunity time: ${formattedImmunityTime}s`;
-            myState.snake.immunityTime -= dt;
-            myState.snake.immunityTime = Math.max(0, myState.snake.immunityTime);
-        }
-    }
-
-    if(!myState.isFinished) {
-        window.requestAnimationFrame(() => updateTimeDisplays(currentTime));
-    }
-};
 
 function initGameState() {
     myState = new GameState();
@@ -534,8 +527,9 @@ function checkOpposite(dir1, dir2) {
 
 function startGameLoop(myState) {
     if(myState.isPaused) { return; }
-    myState.startTime = new Date();
-    gameLoop(myState, +new Date());
+    myState.startTimeUNIX = new Date();
+    myState.startTime = performance.now();
+    gameLoop(myState);
 }
 
 function consumeFruitAt(myState, x, y) {
@@ -630,47 +624,56 @@ function ateCarrots(fruit, myState) {
     playSound("ateCarrot");
 }
 function ateGoldenApple(fruit, myState) {
-    myState.snake.immunityTime += IMMUNITY_TIME;
+    myState.snake.immunityTime += IMMUNITY_TICKS * myState.tickRate;
+    myState.snake.immunityStartTime = performance.now();
     myState.snake.color = "immune";
     playSound("immuneOn");
 }
 
-function updateScoreHTML(myState) {
-    document.getElementById("scoreDisplayer").innerHTML = `Score: ${myState.score}`;
-}
-
-function resetTimeHTML(myState) {
+function resetUI(myState) {
+    document.getElementById("scoreDisplayer").innerHTML = "Score: 2";
     document.getElementById("timeDisplayer").innerHTML = "Time: 0.000s";
-    document.getElementById("immunityTimeDisplayer").innerHTML = "Immunity Time: 0.0s"
+    document.getElementById("immunityTimeDisplayer").innerHTML = "Immunity Time: 0.0s";
 }
 
 function initGame(myState) {
     drawBoard(myState);
     spawnFruit(myState);
     updateCanvas(myState);
-    updateScoreHTML(myState);
-    resetTimeHTML(myState);
-
+    resetUI(myState);
     startGameLoop(myState); //TODO: change later
 }
 
-function gameLoop(myState, prevTime) {
+function gameLoop(myState, lastStateUpdate = 0, lastCanvasUpdate = 0) {
     if(myState.isPaused) { return; }
-    let curTime = +new Date();
-    if(myState.snake.isImmune) {
-        if(myState.snake.immunityTime < 1000) {
-            myState.snake.color == "main" ? myState.snake.color = "immune" : myState.snake.color = "main";
-        }
-    } else {
-        myState.snake.color = "main";
-    }
-    if(curTime - prevTime >= myState.refreshRate) {
+
+    let curTime = performance.now();
+    if(curTime - lastStateUpdate > myState.tickRate) {
         updateState(myState);
-        updateScoreHTML(myState);
-        prevTime = curTime;
+        lastStateUpdate = curTime;
     }
-    updateCanvas(myState);
-    setTimeout(() => gameLoop(myState, prevTime), myState.graphicsRefreshRate);
+
+    if(curTime - lastCanvasUpdate > myState.graphicsRefreshRate) {
+        updateCanvas(myState);
+        lastCanvasUpdate = curTime;
+    }
+
+    myState.snake.timeAlive = curTime - myState.startTime;  /////TODO: ~~~~!!!!!!!!!!!! change the logic to do floor to the refresh rate otherwise unfair leaderboard !!!!!!!!!!!!!!!!!!!!~~~~~
+    if(myState.snake.isImmune) {
+        myState.snake.immunityTime = IMMUNITY_TICKS * myState.tickRate - (curTime - myState.snake.immunityStartTime);
+        myState.snake.immunityTime = Math.max(0, myState.snake.immunityTime);
+    }
+
+    updateUI(myState);
+
+    window.requestAnimationFrame(() => gameLoop(myState, lastStateUpdate, lastCanvasUpdate));
+}
+
+function updateUI(myState) {
+    document.getElementById("scoreDisplayer").innerHTML = `Score: ${myState.score}`;
+    document.getElementById("timeDisplayer").innerHTML = `Time: ${(myState.snake.timeAlive/1000).toFixed(3)}s`;
+    let formattedImmunityTime = (Math.trunc(myState.snake.immunityTime/100)/10).toFixed(1);
+    document.getElementById("immunityTimeDisplayer").innerHTML = `Immunity time: ${formattedImmunityTime}s`;
 }
 
 loadContent();
