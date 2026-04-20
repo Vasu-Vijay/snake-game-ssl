@@ -109,6 +109,7 @@ class GameState {
         this.tickRate = TICK_RATE;
         this.graphicsRefreshRate = GRAPHICS_REFRESH_RATE;
         this.startTimeUNIX = undefined;
+        this.frameNum = 0;
         this.startTime = undefined;
         this.deathTime = undefined;
         this.isPaused = true; //TODO: change it before commit
@@ -227,9 +228,7 @@ function drawBackground(myState, x, y) {
 
 function drawSnake(myState) { // to draw the snake, with corresponding sprites, and also update the grid
     let snake = myState.snake;
-    for(let s of snake.body) {
-        drawBackground(myState, s.x, s.y);
-    }
+
     for(let i in snake.body) { // painting order to decide who comes on top if overlap
         let s = snake.body[snake.length - i - 1];
         if(!s) {
@@ -272,16 +271,18 @@ function spawnFruit(myState) { //decides a random fruit and a random empty coord
     myState.grid[pos_x][pos_y].push(new Cell("fruit", fruits[id]));
 }
 
-function drawFruit(myState, id, pos_x, pos_y) { //draws a fruits[id] at x, y coords of grid
+function drawFruit(myState, id, pos_x, pos_y, magnification = 1) { //draws a fruits[id] at x, y coords of grid
     if (!(pos_x < myState.nColumns && pos_x >= 0 && pos_y < myState.nRows && pos_y >= 0)) {
         console.error("Invalid fruit coordinates!");
         return;
     }
-    drawBackground(myState, pos_x, pos_y);
+
     let fruit = fruits[id];
     let image_path = fruit.sprite;
     let [canvas_x, canvas_y] = myState.gtoc(pos_x, pos_y);
-    myState.ctx.drawImage(image_elems[image_path], canvas_x, canvas_y, myState.cellSize, myState.cellSize);
+    let imageX = canvas_x + myState.cellSize/2 - myState.cellSize/2 * magnification;
+    let imageY = canvas_y + myState.cellSize/2 - myState.cellSize/2 * magnification;
+    myState.ctx.drawImage(image_elems[image_path], imageX, imageY, myState.cellSize * magnification, myState.cellSize * magnification);
 }
 
 function getDirString(dirX, dirY) { // give the dir name for the dir vector
@@ -314,6 +315,9 @@ function updateDir(myState){ //changes dir variable according to the last key pr
 }
 
 function updateCanvas(myState) {
+    drawBoard(myState);
+    myState.frameNum += 1;
+
     if(myState.snake.isImmune) {
         if(myState.snake.immunityTicks(myState) < 5) {
             myState.snake.color == "main" ? myState.snake.color = "immune" : myState.snake.color = "main";
@@ -321,14 +325,10 @@ function updateCanvas(myState) {
     } else {
         myState.snake.color = "main";
     }
-
-    if(myState.snake.tailChanged) {
-        drawBackground(myState, myState.snake.prevTail.x, myState.snake.prevTail.y);
-    }
-
     drawSnake(myState);
     myState.food.forEach((fruit) => {
-        drawFruit(myState, fruit.id, fruit.x, fruit.y);
+        let magn = (myState.frameNum % 4 < 2) ? 0.85 : 1;
+        drawFruit(myState, fruit.id, fruit.x, fruit.y, magn);
     });
 
 }
