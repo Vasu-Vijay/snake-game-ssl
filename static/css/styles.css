@@ -3,12 +3,17 @@ body {
     background: #c1ff72;
 }
 
+#highScoreDisplayer {
+    font-size: 32px;
+    color:#ffbf00;
+}
+
 #scoreDisplayer{
     font-size: 32px;
     color:#5400ff ;
 }
 #timeDisplayer {
-    color:#5400ff
+    color:#5400ff ;
 }
 
 #immunityContainer {
@@ -16,7 +21,7 @@ body {
 }
 
 #immunityBar {
-    background: #f99ca5cc
+    background: #f99ca5cc;
 }
 #displays {
     width: 450px;
@@ -27,7 +32,7 @@ body {
 }
 
 label.form-label {
-    color:#0505f5
+    color:#0505f5;
 }
 
 #usernameError {
@@ -46,6 +51,17 @@ label.form-label {
     color: #ff0000 !important;
 }
 
+#high-score-message {
+    font-size: 32px;
+    animation: pulseText 1.5s infinite ease-in-out;
+    color:#ffbf00;
+}
+
+#new-high-score{
+    font-size: 24px;
+    font-weight: bold;
+    color:#ffbf00;
+}
 @keyframes pulseText {
     0% {
         transform: scale(1);

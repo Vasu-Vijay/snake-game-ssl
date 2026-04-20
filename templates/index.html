@@ -9,6 +9,10 @@
 
 <body>
     <div id="mainBody" class="hidden d-flex flex-column align-items-center gap-2">
+            <!--TODO: high score message should be displayed for a fixed amount of time and then again it should be hidden-->
+            <p id="high-score-message" class="fw-bold d-none">Yay You beat the HighScore !!!</p>
+            <!--TODO: to make highscore visible , implement JS and change d-none to d-block to toggle visibility-->
+            <p id="highscoreDisplayer" class="high-score fw-bold d-none">HighScore: 2</p>
             <p id="scoreDisplayer" class="fw-bold">Score: 2</p>
         <div id="gameBody">
             <canvas id="game" height="450px" width="450px" class="border border-3 border-dark rounded-0"></canvas>
@@ -39,7 +43,10 @@
                 </div>
 
                 <div class="modal-body">
-
+                    <!--TODO:   Use this to display username in endModal , statsModal-->
+                    <div id="sharedContent" class="d-none">
+                        <h4 class="w-100 text-center" id="usernameDisplay">user</h4>
+                    </div>
                     <div class="mb-3 start">
                         <label class="form-label rounded-0">Enter Username</label> <!--TO DO : Validation-->
                         <input type="text" id="username" class="form-control rounded-0" placeholder="Your name" value="guest_user">
@@ -115,6 +122,8 @@
 
                 <div class="modal-body">
                     <h5 id="death-cause" class="text-center">Death by: </h5>
+                    <!--TODO: New Higscore to be shown only when you beat the high score-->
+                    <h5 id="new-high-score" class="text-center d-none">New HighScore : 0</h5>
                     <table id="deathStats" class="table">
                         <tr>
                             <td>High Score</td>
