@@ -498,7 +498,8 @@ function inputHandler(event, myState) { // event listeners for keydowns, stores 
         d: {x: 1, y: 0}
     }
 
-    let input = keys[event.key]
+    let input = keys[event.key];
+    if(!input) { return; }
     if(myState.inputBuffer.length != myState.inputBufferSize) {
         myState.inputBuffer.push(input);
         let len = myState.inputBuffer.length;
@@ -512,15 +513,14 @@ function inputHandler(event, myState) { // event listeners for keydowns, stores 
             }
         }
     }
-    if(input) {
-        if(myState.isPaused == true && myState.isFinished == false) {
-            if(input.x == 1 && input.y == 0) {
-                myState.inputBuffer.push(input);
-            }
-            if(!(input.x == -1 && input.y == 0)){
-                myState.isPaused = false;
-                startGameLoop(myState);
-            }
+    
+    if(myState.isPaused == true && myState.isFinished == false) {
+        if(input.x == 1 && input.y == 0) {
+            myState.inputBuffer.push(input);
+        }
+        if(!(input.x == -1 && input.y == 0)){
+            myState.isPaused = false;
+            startGameLoop(myState);
         }
     }
         
