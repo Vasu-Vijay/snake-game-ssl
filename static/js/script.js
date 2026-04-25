@@ -1,8 +1,8 @@
 const fruits = {
-    "carrot": {name:"Carrot", score:1, sprite: "../static/sprites/fruits/carrot.png", rel_probability: 1, onEat: ateCarrots},
-    "triplecarrot": {name:"Triple Carrot", score:3, sprite:"../static/sprites/fruits/triplecarrot.png", rel_probability: 1, onEat: ateCarrots}, //TODO: probability to be written
-    "goldenapple": {name:"Golden Apple", score:0, sprite:"../static/sprites/fruits/goldenapple.png", rel_probability: 1, onEat: ateGoldenApple}, //TODO: fix probability
-    "speedupfruit": {name: "Energy", score: 1, sprite:"../static/sprites/fruits/speedupfruit.png", rel_probability: 5, onEat: ateSpeedUp}
+    "carrot": {name:"Carrot", score:1, sprite: "../static/media/sprites/fruits/carrot.png", rel_probability: 1, onEat: ateCarrots},
+    "triplecarrot": {name:"Triple Carrot", score:3, sprite:"../static/media/sprites/fruits/triplecarrot.png", rel_probability: 1, onEat: ateCarrots}, //TODO: probability to be written
+    "goldenapple": {name:"Golden Apple", score:0, sprite:"../static/media/sprites/fruits/goldenapple.png", rel_probability: 1, onEat: ateGoldenApple}, //TODO: fix probability
+    "speedupfruit": {name: "Energy", score: 1, sprite:"../static/media/sprites/fruits/speedupfruit.png", rel_probability: 5, onEat: ateSpeedUp}
 }
 
 var graphicsMode = "classic";
@@ -242,7 +242,7 @@ function drawSnake(myState) { // to draw the snake, with corresponding sprites, 
         }
 
         let [canvas_x, canvas_y] = myState.gtoc(s.x, s.y);
-        let imagePath = "../static/sprites/" + graphicsMode + "/" + myState.snake.color + "/" + s.sprite; // path = folder + base file name
+        let imagePath = "../static/media/sprites/" + graphicsMode + "/" + myState.snake.color + "/" + s.sprite; // path = folder + base file name
         myState.ctx.drawImage(image_elems[imagePath], canvas_x, canvas_y, myState.cellSize, myState.cellSize);
     }
 }

@@ -8,14 +8,27 @@
 </head>
 
 <body>
-    <div id="mainBody" class="hidden">
+    <div id="mainBody" class="hidden d-flex flex-column align-items-center gap-2">
+            <!--TODO: high score message should be displayed for a fixed amount of time and then again it should be hidden-->
+            <p id="high-score-message" class="fw-bold d-none">Yay You beat the HighScore !!!</p>
+            <!--TODO: to make highscore visible , implement JS and change d-none to d-block to toggle visibility-->
+            <p id="highscoreDisplayer" class="high-score fw-bold d-none">HighScore: 2</p>
+            <p id="scoreDisplayer" class="fw-bold">Score: 2</p>
         <div id="gameBody">
-            <canvas id="game"></canvas>
+            <canvas id="game" height="450px" width="450px" class="border border-3 border-dark rounded-0"></canvas>
         </div>
-        <div id="displays">
-            <p id="scoreDisplayer">Score: 2</p>
-            <p id="timeDisplayer">Time: 0.000s</p>
-            <p id="immunityTimeDisplayer">Immunity Time: 0s</p>
+        <div id="displays" class="text-center fs-4">
+            <p id="timeDisplayer" class="fw-bold">Time: 0.000s</p>
+            <div id="immunityContainer" class="w-100 mt-2">
+                <div class="d-flex justify-content-between fw-bold mb-1">
+                    <span>Immunity</span>
+                    <span id="immunityTimeDisplayer">0s</span><!--TODO: Updation to be fixed by JS-->
+                </div>
+                <!--TODO: immunity-bar width to be controlled by JS-->
+                <div class="progress border border-2 border-dark rounded-5" style="height: 20px;">
+                    <div id="immunityBar" class="progress-bar bg-danger" style="width: 15%;"> </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -30,10 +43,13 @@
                 </div>
 
                 <div class="modal-body">
-
+                    <!--TODO:   Use this to display username in endModal , statsModal-->
+                    <div id="sharedContent" class="d-none">
+                        <h4 class="w-100 text-center" id="usernameDisplay">user</h4>
+                    </div>
                     <div class="mb-3 start">
-                        <label class="form-label">Enter Username</label> <!--TO DO : Validation-->
-                        <input type="text" id="username" class="form-control" placeholder="Your name" value="guest_user">
+                        <label class="form-label rounded-0">Enter Username</label> <!--TO DO : Validation-->
+                        <input type="text" id="username" class="form-control rounded-0" placeholder="Your name" value="guest_user">
                         <p id="usernameError" class="hidden"></p>
                     </div>
 
@@ -47,8 +63,8 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Select Mode</label>
-                        <select id="mode" class="form-select">
+                        <label class="form-label rounded-0">Select Mode</label>
+                        <select id="mode" class="form-select rounded-0">
                             <option value="classic">Classic</option>
                             <option value="cyberpunk">Cyberpunk</option>
                         </select>
@@ -56,8 +72,8 @@
 
                     <div class="d-flex justify-content-between">
                         <button class="btn btn-primary" data-bs-target="#rulesModal" data-bs-toggle="modal"
-                            data-bs-dismiss="modal">Rules</button>
-                        <button class="btn btn-primary" id="startbtn">Start Game</button>
+                            data-bs-dismiss="modal"><img src="../static/media/ui/rules.png"class="icon">Rules</button>
+                        <button class="btn btn-primary" id="startbtn"><img src="../static/media/ui/play_button.png"class="icon">Start Game</button>
                     </div>
 
                 </div>
@@ -72,16 +88,19 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3 border-3 border-dark">
                 <div class="modal-header">
-                    <h5 class="modal-title w-100 text-center">Game Rules</h5>
+                    <h5 class="modal-title w-100 text-center"><img src="../static/media/ui/rules.png"class="icon"> Game Rules</h5>
                 </div>
 
                 <div class="modal-body">
                     <ul>
-                        <li>Use arrow keys to move the snake</li>
+                        <li>Use arrow keys or WASD to move the snake</li>
                         <li>Eat food to grow longer</li>
                         <li>Avoid hitting walls</li>
                         <li>Avoid colliding with yourself</li>
-                        <li>Score increases with each food eaten</li>
+                        <li><img src="../static/media/sprites/fruits/carrot.png" class="icon"> score : +1</li>
+                        <li><img src="../static/media/sprites/fruits/triplecarrot.png" class="icon"> score : +3</li>
+                        <li><img src="../static/media/sprites/fruits/goldenapple.png" class="icon"> grants immunity for 4 seconds</li>
+                        <li>When Immunity is about to expire, the snake will blink</li>
                     </ul>
                 </div>
 
@@ -98,11 +117,13 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3 border-3 border-dark">
                 <div class="modal-header">
-                    <h5 class="modal-title w-100 text-center game-over" >Game Over !!</h5>
+                    <h5 class="modal-title w-100 text-center game-over monospace" >Game Over !!</h5>
                 </div>
 
                 <div class="modal-body">
                     <h5 id="death-cause" class="text-center">Death by: </h5>
+                    <!--TODO: New Higscore to be shown only when you beat the high score-->
+                    <h5 id="new-high-score" class="text-center d-none">New HighScore : 0</h5>
                     <table id="deathStats" class="table">
                         <tr>
                             <td>High Score</td>
