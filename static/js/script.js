@@ -375,17 +375,22 @@ function executeFuneral(myState, cause) { // perform actions reqd after game end
         user.saveLatestRecord();
     }
 
+    updateUIafterDeath(myState, cause);
+
+    myState.destroy();  //TODO maybe add a proper reset function
+}
+
+function updateUIafterDeath(myState, cause) {
     document.getElementById("death-score").innerText = myState.score;
     document.getElementById("death-cause").innerHTML = `Death by: ${cause}`;
     document.getElementById("death-high-score").innerHTML = user.highScore;
-    document.getElementById("death-time-alive").innerHTML = myState.snake.timeAlive;
+    document.getElementById("death-time-alive").innerHTML = `${(myState.snake.timeAlive/1000).toFixed(3)}s`;
 
     document.getElementById("start-high-score").innerHTML = user.highScore;
 
     let endModal = new bootstrap.Modal(document.getElementById("endModal"));
     endModal.show();
 
-    myState.destroy();  //TODO maybe add a proper reset function
 }
 
 function updateState(myState) {
