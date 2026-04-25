@@ -493,13 +493,18 @@ function Delete_Entries(){
             printf "\033c"
             printf "\e[31mInvalid Timestamp\e[0m\n"
         fi
-    #Does not verify If date is correct or not 
     elif [[ $method == 3 ]]; then
         awk -F "," '{
             if (NR==1){print $0}
-            else if ($0 ~ /^\[[0-9]+-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\],[^,]+,[0-9]+,[A-Z]+,[0-9]+$/) {
-                if ($4 !~ /(WALL|SELF)/){}
-                else {print $0}
+            else if ($0 ~ /^\[[0-9]+-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\],[^,]+,[0-9]+,[A-Z]+,[0-9]+[.]?[0-9]*$/) {
+                line=$0
+                t_stamp=$1
+                split(t_stamp,a,"]");
+                split(a[1],b,"[");
+                if (!system("date -d \"" b[2] "\" \"+%Y-%m-%d %H:%M:%S\" >/dev/null 2>&1")){
+                    if ($4 !~ /(WALL|SELF)/){}
+                    else {print line}
+                }                
             }
         }' history.txt > history.tmp
         mv history.tmp history.txt
