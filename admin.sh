@@ -344,60 +344,37 @@ function Sorted_View(){
     printf "\033c"
 }  
 
+function calculate_records(){
+    awk -F "," '{
+            score+=$3
+            time+=$5
+            death[$4]+=1
+            if($3>=max_score){
+                max_score=$3
+                max_score_detail[$2]=$0
+            }
+        }
+        END {
+            printf "average_score : " score/NR "\naverage_time : " time/NR "\nmax_score : " max_score "\n\n"
+            printf"CAUSE_OF_DEATH :        "
+            for(i in death){
+                printf  i ":" death[i] "    " 
+            }
+            printf "\n\nList of Entries with Max Score\n\n"
+            for(i in max_score_detail){
+                print max_score_detail[i]
+            }
+        }
+        ' | less
+}
 #Analyse the data of players of all games
 function Analytics(){
-    printf "\033c"  
-    if [[ $user != "all" ]]; then
-        awk -F "," -v user="$user" '{
-            if(NR==1) {print $0}
-            else if($2 == user){
-                print $0
-            }
-        }' history.txt > history.tmp #created a history.tmp file to be used to read only specific users
-    else 
-        cp history.txt history.tmp #created a history.tmp file to match above format if all users are to be analysed
+    printf "\033c"
+    if [[ "$user" == "all" ]]; then
+        tail -n +2 history.txt | sort -rnt "," -k 3,3 | calculate_records 
+    else
+        tail -n +2 history.txt | grep ",$user," | sort -rnt "," -k 3,3 | calculate_records
     fi
-    #Showing Analysis of Games of the users
-    tail -n +2 history.tmp |sort -t "," -k 2 | awk -F "," '
-                {   
-                    if(NR == 1){ 
-                        if($0 ~ /^$/){
-                            printf "No Records in history.txt"
-                        } else {
-                            printf "User ,  Avg_Score ,  Avg_Time_Survived ,  Min_Score ,  Max_Score\n"
-                            cur_user=$2 ; score=$3 ; time=$5 ; death[$4]=1 ; min_score=score ; max_score=score ; games=1 ; min_score_detail=$0 ; max_score_detail=$0;
-                        }
-                    }
-                    else if (cur_user != $2){
-                        printf cur_user " ,\t"   score/games "  ,\t" time/games " ,\t" min_score " ,\t" max_score "\n"
-                        printf "\t min_score : " min_score_detail "\n"
-                        printf "\t max_score : " max_score_detail "\n"
-                        printf "\n";
-                        cur_user=$2
-                        for (i in death){
-                            death[i]=0
-                        }
-                        
-                        score=$3 ; time=$5 ; death[$4]=1 ; min_score=score ; max_score=score ; games=1 ; min_score_detail=$0 ; max_score_detail=$0 ;
-                    } else {
-                        score+=$3 ; time+=$5 ; death[$4]+=1 ; games+=1 ;
-                        if(min_score > $3) {
-                            min_score=$3
-                            min_score_detail=$0
-                        }
-                        if(max_score < $3) {
-                            max_score=$3
-                            max_score_detail=$0
-                        }
-                    }
-                }
-                END {
-                    printf cur_user " , " score/games " , " time/games " , " min_score " , " max_score "\n"
-                    printf "\t min_score : " min_score_detail "\n"
-                    printf "\t max_score : " max_score_detail "\n"
-                } 
-            ' | less
-    rm history.tmp #remove temporary file created
 }
 
 
