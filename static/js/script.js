@@ -466,6 +466,7 @@ function start() {
         Array.from(document.getElementsByClassName("start")).forEach(el => { el.classList.toggle("hidden"); });
         
         document.getElementById("mainBody").classList.toggle("hidden");
+        document.getElementById("mainBody").classList.toggle("d-flex");
 
         isFirst = false;
     }
