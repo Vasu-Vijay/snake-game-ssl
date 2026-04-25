@@ -15,11 +15,16 @@ const CANVAS_WIDTH = 300;
 const TICK_RATE = 200; //time in ms
 const GRAPHICS_REFRESH_RATE = 100;
 
+const N_COLUMNS = 10;
+const N_ROWS = 10;
+const CELL_SIZE = 30;
+
 const image_elems={} //dict containing <image_path>:<html img elem> pairs
 
 const turn_images=[["body_topleft.png","body_bottomleft.png"],     //-1,-1   -1,+1     {del_x, del_y values}
                    ["body_topright.png","body_bottomright.png"]];  //+1,-1   +1,+1
 
+const deathCauses = ["SELF", "WALL"];
 let isFirst = true;
 
 let myState = null;
@@ -35,7 +40,7 @@ class User {
     }
 
     addRecord(record) {
-        if(!((record.startTime) && (record.score && record.score>=2) && (record.cause && ["SELF", "WALL"].includes(record.cause)) && (record.timeAlive && record.timeAlive > 0))) {
+        if(!((record.startTime) && (record.score && record.score>=2) && (record.cause && deathCauses.includes(record.cause)) && (record.timeAlive && record.timeAlive > 0))) {
             console.error("Invalid record pushed!", record);
             return null;
         }
@@ -79,7 +84,7 @@ class User {
 const user = new User();
 
 class GameState {
-    constructor(nRows = 10, nColumns = 10, cellSize = 30) {
+    constructor(nRows = N_ROWS, nColumns = N_COLUMNS, cellSize = CELL_SIZE) {
         this.nRows = nRows;
         this.nColumns = nColumns;
         this.cellSize = cellSize;
@@ -87,8 +92,8 @@ class GameState {
         this.canvas = document.getElementById("game");
         this.ctx = this.canvas.getContext("2d");
 
-        this.scale = window.devicePixelRatio || 1
-        this.scale=2;
+        // this.scale = window.devicePixelRatio || 1
+        this.scale = 2;
 
         this.canvas.width = CANVAS_WIDTH * this.scale
         this.canvas.height = CANVAS_HEIGHT * this.scale
@@ -102,8 +107,8 @@ class GameState {
         this.ctx.imageSmoothingQuality = "high";
 
         this.snake = new Snake(this);
-        this.grid = Array.from({ length: nColumns }, () =>
-            Array.from({ length: nRows }, () => [])
+        this.grid = Array.from({ length: this.nColumns }, () =>
+            Array.from({ length: this.nRows }, () => [])
         );
 
         this.inputBuffer = [];
@@ -370,17 +375,22 @@ function executeFuneral(myState, cause) { // perform actions reqd after game end
         user.saveLatestRecord();
     }
 
+    updateUIafterDeath(myState, cause);
+
+    myState.destroy();  //TODO maybe add a proper reset function
+}
+
+function updateUIafterDeath(myState, cause) {
     document.getElementById("death-score").innerText = myState.score;
     document.getElementById("death-cause").innerHTML = `Death by: ${cause}`;
     document.getElementById("death-high-score").innerHTML = user.highScore;
-    document.getElementById("death-time-alive").innerHTML = myState.snake.timeAlive;
+    document.getElementById("death-time-alive").innerHTML = `${(myState.snake.timeAlive/1000).toFixed(3)}s`;
 
     document.getElementById("start-high-score").innerHTML = user.highScore;
 
     let endModal = new bootstrap.Modal(document.getElementById("endModal"));
     endModal.show();
 
-    myState.destroy();  //TODO maybe add a proper reset function
 }
 
 function updateState(myState) {
@@ -461,6 +471,7 @@ function start() {
         Array.from(document.getElementsByClassName("start")).forEach(el => { el.classList.toggle("hidden"); });
         
         document.getElementById("mainBody").classList.toggle("hidden");
+        document.getElementById("mainBody").classList.toggle("d-flex");
 
         isFirst = false;
     }
@@ -498,7 +509,8 @@ function inputHandler(event, myState) { // event listeners for keydowns, stores 
         d: {x: 1, y: 0}
     }
 
-    let input = keys[event.key]
+    let input = keys[event.key];
+    if(!input) { return; }
     if(myState.inputBuffer.length != myState.inputBufferSize) {
         myState.inputBuffer.push(input);
         let len = myState.inputBuffer.length;
@@ -512,15 +524,14 @@ function inputHandler(event, myState) { // event listeners for keydowns, stores 
             }
         }
     }
-    if(input) {
-        if(myState.isPaused == true && myState.isFinished == false) {
-            if(input.x == 1 && input.y == 0) {
-                myState.inputBuffer.push(input);
-            }
-            if(!(input.x == -1 && input.y == 0)){
-                myState.isPaused = false;
-                startGameLoop(myState);
-            }
+    
+    if(myState.isPaused == true && myState.isFinished == false) {
+        if(input.x == 1 && input.y == 0) {
+            myState.inputBuffer.push(input);
+        }
+        if(!(input.x == -1 && input.y == 0)){
+            myState.isPaused = false;
+            startGameLoop(myState);
         }
     }
         
@@ -601,9 +612,9 @@ function updateTail(myState){ // updates the sprite of the new tail and paints b
         tailDir.x = del_x;
         tailDir.y = del_y;
 
-        if(del_x== 9 || del_x == -9) {
+        if(del_x == myState.nColumns - 1 || del_x == -(myState.nColumns - 1)) {
             tailDir.x = (del_x > 0) ? -1 : +1;
-        } else if(del_y == 9 || del_y == -9) {
+        } else if(del_y == myState.nRows - 1 || del_y == -(myState.nRows - 1)) {
             tailDir.y = (del_y > 0) ? -1 : +1;
         }
     }
