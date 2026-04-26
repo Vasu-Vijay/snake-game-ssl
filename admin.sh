@@ -46,15 +46,9 @@ valid_command_default(){
 }
 #To be used to validate if user has input valid user or not
 function valid_user(){
-    if valid_command_quit "$1";then
-        return 0
-    fi
-
     if [[ "$1" == $'\x1b' || $user_list =~ ":$1:" || "$1" == "" ]]; then
         return 0
     else 
-        printf "\033c"
-        printf "\e[31mPlease enter a valid Username / all\e[0m\n"
         return 1
     fi
 }
@@ -263,23 +257,34 @@ function Exit(){
 
 #Specifying user to be analysed
 function Query_User(){
-    
+    local attempt=0
     while true; do
     read -e -p $'\e[33mEnter Username : \e[0m' input
-        if valid_user "$input" ; then 
+        if valid_command_quit "$input";then
+            return 0
+        elif valid_user "$input" ; then 
             if [[ "$input" == "" ]]; then {
                 user="$input"
+                printf "\033c"
                 printf "\e[32mAll Users Will be Queried\e[0m\n" 
             }
             elif [[ $user_list =~ ":$input:" ]];then {
                 user="$input"
+                printf "\033c"
                 printf "\e[32m$user Will be Queried\e[0m\n"
             }
             fi
-            break        
+            break    
+        else
+            if [[ "$attempt" -eq 0 ]];then
+                printf "\e[1A\e[K"
+            else 
+                printf "\e[2A\e[K"
+            fi        
+            printf "\e[31mPlease enter a valid Username\e[0m\n"
         fi
+        attempt=1
     done
-    printf "\033c"
 }
 
 #View Recent Scores of game in a paginated view.
@@ -403,27 +408,62 @@ function Analytics(){
     fi
 }
 
+remove_entries_user(){
+    awk -F "," -v user="$1" '
+        {
+            if (NR==1) {print $0}
+            else if($2 != user){
+                print $0
+            }
+        }' history.txt > history.tmp
+    
+    mv history.tmp history.txt
+    
+    printf "\033c"
+    printf "\e[32mhistory.txt has been updated\e[0m\n"
+    update_stats
+}
+
 delete_user(){
-     read -e -p $'\e[33mSpecify a User : \e[0m' player
-        read -e -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
-        if [[ $confirmation == "y" ]]; then
-            awk -F "," -v user="$player" '
-                {
-                    if (NR==1) {print $0}
-                    else if($2 != user){
-                        print $0
-                    }
-                }' history.txt > history.tmp
-            
-            mv history.tmp history.txt
-            
-            printf "\033c"
-            printf "\e[32mhistory.txt has been updated\e[0m\n"
-            update_stats
-        else 
-            printf "\033c"
-            menu_display
+    local attempt=0
+    while true; do
+        read -e -p $'\e[33mSpecify a User : \e[0m' player
+        if valid_command_quit "$player"; then
+            return 0
+        elif [[ "$player" != "" ]] && valid_user "$player" ; then
+            break
+        else
+            if [[ "$attempt" -eq 0 ]];then
+                printf "\e[1A\e[K"
+            else 
+                printf "\e[2A\e[K"
+            fi            
+            printf "\e[31mEnter a valid username\n\e[0m"
         fi
+        attempt=1
+    done
+
+    attempt=0
+    while true; do
+        read -e -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
+        if valid_command_quit "$confirmation"; then
+            return 0
+        elif [[ $confirmation == "y" ]]; then
+            remove_entries_user "$player"
+            break
+        elif [[ "$confirmation" == "n" ]];then 
+            printf "\033c"
+            return 0
+        else
+            if [[ "$attempt" -eq 0 ]];then
+                printf "\e[1A\e[K"
+            else 
+                printf "\e[2A\e[K"
+            fi            
+            printf "\e[31mEnter a valid command\n\e[0m"
+        fi
+        attempt=1
+    done
 }
 
 remove_entries_timestamp(){
