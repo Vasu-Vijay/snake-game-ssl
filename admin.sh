@@ -45,8 +45,10 @@ valid_command_default(){
 }
 #To be used to validate if user has input valid user or not
 function valid_user(){
-    valid_command_quit "$1"
-    [ $? == 0 ] && return $?
+    if valid_command_quit "$1";then
+        return 0
+    fi
+
     if [[ "$1" == $'\x1b' || $user_list =~ ":$1:" || "$1" == "" ]]; then
         return 0
     else 
@@ -262,21 +264,22 @@ function Exit(){
 function Query_User(){
     
     while true; do
-    read -e -p $'\e[33mEnter Username : \e[0m' user
-        if valid_user "$user" ; then 
-            if [[ $user_list =~ ":$user:" || "$user" == "" ]]; then
-                break
+    echo "Hi"
+    read -e -p $'\e[33mEnter Username : \e[0m' input
+        if valid_user "$input" ; then 
+            if [[ "$input" == "" ]]; then {
+                user="$input"
+                printf "\e[32mAll Users Will be Queried\e[0m\n" 
+            }
+            elif [[ $user_list =~ ":$input:" ]];then {
+                user="$input"
+                printf "\e[32m$user Will be Queried\e[0m\n"
+            }
             fi
+            break        
         fi
     done
     printf "\033c"
-    if [[ "$user" == "" ]]; then {
-        printf "\e[32mAll Users Will be Queried\e[0m\n" 
-    }
-    else {
-        printf "\e[32m$user Will be Queried\e[0m\n"
-        }
-    fi
 }
 
 #View Recent Scores of game in a paginated view.
