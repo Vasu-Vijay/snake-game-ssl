@@ -8,7 +8,9 @@ operation=("Query_User" "Recent_Score" "Analytics" "Delete_Entries" "Log_Rotatio
 #first line of history.txt
 first_line="start_time,username,score,cause,time_alive"
 #To be used to store all users in history.txt
-function update_userlist(){
+update_stats(){
+    first_game_time=$(tail -n +2 history.txt | sort | head -1 | cut -d "]" -f1 | cut -d "[" -f2)
+    last_game_time=$(tail -n +2 history.txt | sort | tail -1 | cut -d "]" -f1 | cut -d "[" -f2)
     user_list=":$(tail -n +2 history.txt | cut -d',' -f2 | sort -u | tr '\n' ':' )"
 }
 
@@ -36,11 +38,10 @@ valid_command_quit(){
 }
 
 valid_command_default(){
-    if [[ "$2" == "" ]];then
+    if [[ "$1" == "" ]];then
         return 0
     else
-        valid_command "$1" "$2" 
-        return $?
+        return 1
     fi
 }
 #To be used to validate if user has input valid user or not
@@ -264,7 +265,6 @@ function Exit(){
 function Query_User(){
     
     while true; do
-    echo "Hi"
     read -e -p $'\e[33mEnter Username : \e[0m' input
         if valid_user "$input" ; then 
             if [[ "$input" == "" ]]; then {
@@ -324,7 +324,10 @@ function Sorted_View(){
         tabular_display
         read -e -n 1 -p $'\e[33mSelect a specific feature to filter : \e[0m' key
         printf "\n"
-        if valid_command_default 4 $key; then
+        if valid_command_default "$key"; then
+            key=4
+            break
+        elif valid_command 4 $key; then
             break
         else 
             printf "\033c" 
@@ -336,7 +339,10 @@ function Sorted_View(){
         while true;do
         read -e -p $'\e[33mSort in ascending order\e[37m {default} \e[33m(1) or Sort in descending order (2) : \e[0m' command
         echo "$command"
-        if valid_command_default 2 $command; then
+        if valid_command_default "$command";then
+            command=1
+            break
+        elif valid_command 2 $command; then
             break
         else
             printf "\033c" 
@@ -357,7 +363,7 @@ function Sorted_View(){
         { echo "$first_line";tail -n +2 history.txt | sort -rnt "," -k 5,5;} | output_table
     } elif [[ "$key" == '3' ]];then {
         { echo "$first_line";tail -n +2 history.txt | sort -rnt "," -k 3,3;} | output_table
-    } elif [[ "$key" == "4" || "$key" == "" ]];then {
+    } elif [[ "$key" == "4" ]];then {
         { echo "$first_line";tail -n +2 history.txt |sort -rt "," -k 1;} | output_table
     } fi 
 
@@ -413,65 +419,93 @@ delete_user(){
             
             printf "\033c"
             printf "\e[32mhistory.txt has been updated\e[0m\n"
-            update_userlist
+            update_stats
         else 
             printf "\033c"
             menu_display
         fi
 }
 
-delete_timestamps(){
-     read -e -p $'\e[33mEnter time stamp in format ( YYYY-MM-DD HH:MM:SS ) - \e[0m' timestamp
-        if Validate_Timestamp "$timestamp" ; then 
-            read -e -p $'\e[33mDo you want to delete entries after the timestamp or before (1/2) - \e[0m' option
-            if [[ $option == 1 ]]; then
-                read -e -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
-                if [[ $confirmation == "y" ]]; then
-                    awk -F "," -v timestamp="[$timestamp]" '
-                        {
-                            if(NR == 1) {print $0}
-                            else if($1 <= timestamp){
-                                print $0
-                            }
-                        }
-                    ' history.txt > history.tmp
-                    mv history.tmp history.txt
-                    
-                    printf "\e[32mhistory.txt has been updated\e[0m\n"
-                    update_userlist
-                    printf "\033c"
-                else 
-                    printf "\033c"
-                    menu_display
-                fi
-            elif [[ $option == 2 ]]; then
-                read -e -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
-                if [[ $confirmation == "y" ]]; then
-                    awk -F "," -v timestamp="[$timestamp]" '
-                        {
-                            if(NR==1) {print $0}
-                            else if($1 >= timestamp){
-                                print $0
-                            }
-                        }
-                    ' history.txt >  history.tmp
-                    mv history.tmp history.txt
+remove_entries_timestamp(){
+    awk -F "," -v start="$1" -v end="$2" '{
+        if(NR == 1){print $0}
+        else {
+            timestamp = $1
+            sub(/^\[/, "", timestamp)
+            sub(/\]$/, "", timestamp)
+            if(timestamp < start || timestamp > end){
+                print $0
+            }
+        }
+    }' history.txt > history.tmp
+    mv history.tmp history.txt
+}
 
-                    printf "\e[32mhistory.txt has been updated\e[0m\n"
-                    update_userlist
-                    printf "\033c"
-                else
-                    printf "\033c"
-                    menu_display
-                fi
-            else
-                printf "\033c"
-                printf "\e[31mInvalid Command\e[0m\n"
+delete_timestamps(){
+    printf "\e[35mEnter the range of timestamps to delete entries\n"
+    printf "Enter the  timestamp in the format ( YYYY-MM-DD HH:MM:SS )\n\e[0m"
+    local attempt=0
+    while true ;do
+        read -e -p $'\e[33mStart Time : \e[0m' start_time
+        if valid_command_default "$start_time"; then
+            start_time="$first_game_time"
+            break
+        elif valid_command_quit "$start_time"; then
+            return 0
+        elif ! Validate_Timestamp "$start_time" ; then
+            if [[ "$attempt" -eq 0 ]];then
+                printf "\e[1A\e[K"
+            else 
+                printf "\e[2A\e[K"
             fi
-        else 
-            printf "\033c"
-            printf "\e[31mInvalid Timestamp\e[0m\n"
+            printf "\e[31mEnter a valid Timestamp\n\e[0m"
+        else
+            break
         fi
+        attempt=1
+    done
+    attempt=0
+    while true ;do
+        read -e -p $'\e[33mEnd Time : \e[0m' end_time
+        if valid_command_default "$end_time";then
+            end_time="$last_game_time"
+            break
+        elif valid_command_quit "$end_time"; then
+            return 0
+        elif ! Validate_Timestamp "$end_time" ; then
+            if [[ "$attempt" -eq 0 ]];then
+                printf "\e[1A\e[K"
+            else 
+                printf "\e[2A\e[K"
+            fi
+            printf "\e[31mEnter a valid Timestamp\n\e[0m"
+        else
+            break
+        fi
+        attempt=1
+    done    
+    attempt=0
+    while true; do
+        read -e -p $'\e[31mAre you sure you want to delete the records? (y/n) \e[0m' confirmation
+        if valid_command_quit "$confirmation";then
+            return 0
+        elif [[ "$confirmation" == "n" ]]; then
+            printf "\033c"
+            return 0
+        elif [[ "$confirmation" == "y" ]]; then
+            remove_entries_timestamp "$start_time" "$end_time"
+            break
+        else 
+            if [[ "$attempt" -eq 0 ]];then
+                printf "\e[1A\e[K"
+            else 
+                printf "\e[2A\e[K"
+            fi
+            printf "\e[31mPlease Enter a Valid Command\n\e[0m"
+        fi    
+        attempt=1 
+    done    
+    printf "\033c"   
 }
 
 delete_misformatted_records(){
@@ -517,7 +551,7 @@ init(){
     [ ! -f "history.txt" ] && printf "\033c" && printf "\e[31mhistory.txt file not found.\e[0m\n" && exit
     [[ $(head -1 history.txt) != "$first_line" ]] && printf "\033c" && printf "\e[31mInvalid file format.\e[0m\n" && exit
     [[ $(head -1 history.txt) == "$first_line" ]] && [[ $(wc -l history.txt | cut -d " " -f 1) -eq 1 ]] && printf "\033c" && printf "\e[31mhistory.txt has no records stored.\e[0m\n" && exit
-    update_userlist
+    update_stats
     history -c #prevents terminal history to be accessed in the process
     printf "\033c"
     #Display menu untill not exited
