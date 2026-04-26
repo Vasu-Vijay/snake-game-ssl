@@ -2,7 +2,7 @@
 
 
 #Specified Current User/Users being analysed.
-user=all 
+user=""
 #Different type of operations that can be performed from menu.
 operation=("Query_User" "Recent_Score" "Analytics" "Delete_Entries" "Log_Rotation" "Restore_Logs" "Sorted_View" "Exit")
 #first line of history.txt
@@ -14,21 +14,45 @@ function update_userlist(){
 
 #To be used to validate if command entered is correct or not
 function valid_command(){
-    if [[ "$2" =~ ^[1-$1]$ || "$2" == "q" || "$2" == $'\x1b' || "$2" == "" ]]; then 
+    
+    if  valid_command_quit "$2" ;then
+        return 0
+    fi
+    if [[ "$2" =~ ^[1-$1]$ || "$2" == $'\x1b' ]]; then 
         return 0
     else 
-        return -1
+        return 1
     fi 
 }
 
+valid_command_quit(){
+    if [[ "$1" == "q" ]];then
+        printf "\033c"
+        menu_display
+        return 0
+    else
+        return 1
+    fi
+}
+
+valid_command_default(){
+    if [[ "$2" == "" ]];then
+        return 0
+    else
+        valid_command "$1" "$2" 
+        return $?
+    fi
+}
 #To be used to validate if user has input valid user or not
 function valid_user(){
-    if [[ "$1" == "q" || "$1" == $'\x1b' || $user_list =~ ":$1:" || "$1" == "all" ]]; then
+    valid_command_quit "$1"
+    [ $? == 0 ] && return $?
+    if [[ "$1" == $'\x1b' || $user_list =~ ":$1:" || "$1" == "" ]]; then
         return 0
     else 
         printf "\033c"
         printf "\e[31mPlease enter a valid Username / all\e[0m\n"
-        return -1
+        return 1
     fi
 }
 
@@ -240,17 +264,13 @@ function Query_User(){
     while true; do
     read -e -p $'\e[33mEnter Username : \e[0m' user
         if valid_user "$user" ; then 
-
-            if [[ $user == "q" || $user == $'\x1b' ]]; then
-                printf "\033c"
-                menu_display
-            elif [[ $user_list =~ ":$user:" || "$user" == "all" ]]; then
+            if [[ $user_list =~ ":$user:" || "$user" == "" ]]; then
                 break
             fi
         fi
     done
     printf "\033c"
-    if [[ "$user" == "all" ]]; then {
+    if [[ "$user" == "" ]]; then {
         printf "\e[32mAll Users Will be Queried\e[0m\n" 
     }
     else {
@@ -262,7 +282,7 @@ function Query_User(){
 #View Recent Scores of game in a paginated view.
 function Recent_Score(){
     printf "\033c"
-    if [ "$user" == "all" ]; then {
+    if [ "$user" == "" ]; then {
         (echo "$first_line"; tail -n +2 history.txt |sort -r ) | output_table
     } else {
         (echo "$first_line"; tail -n +2 history.txt | sort -r ) | awk -F "," -v user="$user" '
@@ -301,7 +321,7 @@ function Sorted_View(){
         tabular_display
         read -e -n 1 -p $'\e[33mSelect a specific feature to filter : \e[0m' key
         printf "\n"
-        if valid_command 4 $key; then
+        if valid_command_default 4 $key; then
             break
         else 
             printf "\033c" 
@@ -313,7 +333,7 @@ function Sorted_View(){
         while true;do
         read -e -p $'\e[33mSort in ascending order\e[37m {default} \e[33m(1) or Sort in descending order (2) : \e[0m' command
         echo "$command"
-        if valid_command 2 $command; then
+        if valid_command_default 2 $command; then
             break
         else
             printf "\033c" 
@@ -334,10 +354,7 @@ function Sorted_View(){
         { echo "$first_line";tail -n +2 history.txt | sort -rnt "," -k 5,5;} | output_table
     } elif [[ "$key" == '3' ]];then {
         { echo "$first_line";tail -n +2 history.txt | sort -rnt "," -k 3,3;} | output_table
-    } elif [[ "$key" == 'q' || "$key" == $'\x1b' ]];then {
-        printf "\033c"
-        menu_display
-    } else {
+    } elif [[ "$key" == "4" || "$key" == "" ]];then {
         { echo "$first_line";tail -n +2 history.txt |sort -rt "," -k 1;} | output_table
     } fi 
 
@@ -370,35 +387,15 @@ function calculate_records(){
 #Analyse the data of players of all games
 function Analytics(){
     printf "\033c"
-    if [[ "$user" == "all" ]]; then
+    if [[ "$user" == "" ]]; then
         tail -n +2 history.txt | sort -rnt "," -k 3,3 | calculate_records 
     else
         tail -n +2 history.txt | grep ",$user," | sort -rnt "," -k 3,3 | calculate_records
     fi
 }
 
-
-#Delete Entries from history.txt
-function Delete_Entries(){
-    printf "\033c"
-    while true; do
-        options=("1] Specific User" "2] Timestamp" "3] Misformatted Records")
-        tabular_display
-        read -e -p $'\e[33mChoose a method to delete : \e[0m' method
-
-        if valid_command 3 $method; then
-            break
-        else 
-            printf "\033c" 
-            printf "\e[31mPlease enter a valid Command\e[0m\n"
-        fi
-    done
-
-    if [[ "$method" == $'\x1b' || "$method" == "q" ]] ;then #"\x1b" does not work as it is interpreted as string. So use $' ' to interpret backslash characters
-        printf "\033c"
-        menu_display
-    elif [[ $method == 1 ]] ; then 
-        read -e -p $'\e[33mSpecify a User : \e[0m' player
+delete_user(){
+     read -e -p $'\e[33mSpecify a User : \e[0m' player
         read -e -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
         if [[ $confirmation == "y" ]]; then
             awk -F "," -v user="$player" '
@@ -418,8 +415,10 @@ function Delete_Entries(){
             printf "\033c"
             menu_display
         fi
-    elif [[ $method == 2 ]]; then
-        read -e -p $'\e[33mEnter time stamp in format ( YYYY-MM-DD HH:MM:SS ) - \e[0m' timestamp
+}
+
+delete_timestamps(){
+     read -e -p $'\e[33mEnter time stamp in format ( YYYY-MM-DD HH:MM:SS ) - \e[0m' timestamp
         if Validate_Timestamp "$timestamp" ; then 
             read -e -p $'\e[33mDo you want to delete entries after the timestamp or before (1/2) - \e[0m' option
             if [[ $option == 1 ]]; then
@@ -470,33 +469,58 @@ function Delete_Entries(){
             printf "\033c"
             printf "\e[31mInvalid Timestamp\e[0m\n"
         fi
-    elif [[ $method == 3 ]]; then
-        awk -F "," '{
-            if (NR==1){print $0}
-            else if ($0 ~ /^\[[0-9]+-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\],[^,]+,[0-9]+,[A-Z]+,[0-9]+[.]?[0-9]*$/) {
-                line=$0
-                t_stamp=$1
-                split(t_stamp,a,"]");
-                split(a[1],b,"[");
-                if (!system("date -d \"" b[2] "\" \"+%Y-%m-%d %H:%M:%S\" >/dev/null 2>&1")){
-                    if ($4 !~ /(WALL|SELF)/){}
-                    else {print line}
-                }                
-            }
-        }' history.txt > history.tmp
-        mv history.tmp history.txt
-        printf "\033c"
-        printf "\e[32mNo misformated Records Remains\e[0m\n"
-    fi
 }
 
-[ ! -f "history.txt" ] && printf "\033c" && printf "\e[31mhistory.txt file not found.\e[0m\n" && exit
-[[ $(head -1 history.txt) != "$first_line" ]] && printf "\033c" && printf "\e[31mInvalid file format.\e[0m\n" && exit
-[[ $(head -1 history.txt) == "$first_line" ]] && [[ $(wc -l history.txt | cut -d " " -f 1) -eq 1 ]] && printf "\033c" && printf "\e[31mhistory.txt has no records stored.\e[0m\n" && exit
-update_userlist
-history -c #prevents terminal history to be accessed in the process
-printf "\033c"
-#Display menu untill not exited
-while true; do
-    menu_display
-done
+delete_misformatted_records(){
+    awk -F "," '{
+        if (NR==1){print $0}
+        else if ($0 ~ /^\[[0-9]+-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\],[^,]+,[0-9]+,[A-Z]+,[0-9]+[.]?[0-9]*$/) {
+            line=$0
+            t_stamp=$1
+            split(t_stamp,a,"]");
+            split(a[1],b,"[");
+            if (!system("date -d \"" b[2] "\" \"+%Y-%m-%d %H:%M:%S\" >/dev/null 2>&1")){
+                if ($4 !~ /(WALL|SELF)/){}
+                else {print line}
+            }                
+        }
+    }' history.txt > history.tmp
+    mv history.tmp history.txt
+    printf "\033c"
+    printf "\e[32mNo misformated Records Remains\e[0m\n"
+}
+#Delete Entries from history.txt
+function Delete_Entries(){
+    printf "\033c"
+
+    local delete_methods=("delete_user" "delete_timestamps" "delete_misformatted_records")
+    while true; do
+        options=("1] Specific User" "2] Timestamp" "3] Misformatted Records")
+        tabular_display
+        read -e -p $'\e[33mChoose a method to delete : \e[0m' method
+
+        if valid_command 3 $method; then
+            break
+        else 
+            printf "\033c" 
+            printf "\e[31mPlease enter a valid Command\e[0m\n"
+        fi
+    done
+
+    ${delete_methods[$method-1]}
+}
+
+init(){
+    [ ! -f "history.txt" ] && printf "\033c" && printf "\e[31mhistory.txt file not found.\e[0m\n" && exit
+    [[ $(head -1 history.txt) != "$first_line" ]] && printf "\033c" && printf "\e[31mInvalid file format.\e[0m\n" && exit
+    [[ $(head -1 history.txt) == "$first_line" ]] && [[ $(wc -l history.txt | cut -d " " -f 1) -eq 1 ]] && printf "\033c" && printf "\e[31mhistory.txt has no records stored.\e[0m\n" && exit
+    update_userlist
+    history -c #prevents terminal history to be accessed in the process
+    printf "\033c"
+    #Display menu untill not exited
+    while true; do
+        menu_display
+    done
+}
+
+init
