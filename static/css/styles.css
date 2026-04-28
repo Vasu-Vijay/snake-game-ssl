@@ -1,6 +1,220 @@
+@font-face {
+    font-family: "Squada One";
+    src: url(../fonts/Squada_One/SquadaOne-Regular.ttf);
+}
+
 body {
     font-size: 20px;
-    background: #c1ff72;
+    /* background: #c1ff72; */
+    background-color: rgba(17, 215, 241, 0.971);
+    /* background-color: #df7eff; */
+    font-family: "Squada One";
+    background-image: url(../media/ui/background_dot.png);
+    background-size: 20px 20px;
+}
+
+.navbar {
+    border-bottom: 5px solid black;
+    font-size:1.2rem;
+}
+
+.navbar-brand {
+    padding:0;
+}
+
+#brand-icon {
+    height:30px;
+    width:30px;
+    rotate:-10deg;
+    box-shadow: 2px 2px black;
+}
+
+#brand-title {
+    color:red;
+    font-weight: 400;
+    font-size: 1.5rem;
+}
+
+#highscore-navbar {
+    border: 3px solid black;
+    box-shadow: 3px 3px black;
+    padding-left: 7px;
+    padding-right: 7px;
+    background-color: rgb(0, 174, 255);
+    font-size: 1rem;
+}
+
+[class^="col"] {
+    padding-left: 0;
+    padding-right: 0
+}
+
+#main-row {
+    margin-top: 4vh;
+    margin-left:1vw;
+}
+
+#right-panel {
+    margin-left: 3vw;
+    margin-right: 3vw;
+}
+
+#game-window {
+    background-color: rgba(17, 215, 241, 0.971);
+    border: 4px solid black;
+    box-shadow: 5px 5px black;
+    height: 70vh;
+}
+
+#game-top-strip {
+    background: black;
+    padding-left: 10px;
+    padding-right: 10px;
+    color: white;
+    font-weight: 100;
+}
+
+#highscore-msg-instrip {
+    
+    text-shadow: 2px 2px rgb(116, 116, 116);
+} 
+
+canvas {
+    border: 2px solid black;
+    box-shadow: 3px 3px black;
+}
+
+.info-card {
+    border: 3px solid black;
+    box-shadow: 4px 4px black;
+    padding-left: 1vw;
+    padding-right: 1vw;
+    padding-top: 1vh;
+    padding-bottom: 1.5vh;
+}
+
+.info-card-header {
+    font-size:27px;
+}
+
+.card-underline {
+    width: 100%;
+    height: 0.4vh;
+    background-color: black;
+    margin-bottom: 2vh;
+}
+
+#score-card {
+    background-color: #ffb2ef;
+    rotate:-1deg;
+}
+
+#score-label {
+    font-size:14px;
+    line-height: 1.2;
+}
+
+#card-score-displayer {
+    font-size: 3rem;
+    line-height: 1;
+    color: red;
+}
+
+.small-card {
+    background-color: white;
+    border: 2px solid black;
+    margin-top: 1.5vh;
+    padding-left: 0.4vw;
+    padding-top: 0.8vh;
+    padding-bottom: 0.8vh;
+}
+
+.small-card-header {
+    font-size: 13px;
+}
+
+.small-card-value {
+    font-size: 20px;
+    line-height: 1;
+    color: hotpink;
+}
+
+#time-card {
+    background-color: #a388ee;
+} 
+
+#active-effects-card {
+    background-color: #8ff769;
+    rotate:1deg;
+}
+
+.progress-bar-wrapper {
+    background-color: white;
+    border: 2px solid black;
+    padding-left: 0.7vw;
+    padding-right: 0.7vw;
+    padding-top: 1vh;
+    padding-bottom: 1.5vh;
+}
+
+.bar-icon {
+    border: 3px solid black;
+    rotate: -2deg;
+    height: 4vh;
+    aspect-ratio: 1 / 1;
+}
+
+.bar-header {
+    color: darkgreen;
+}
+
+.bar {
+    border: 3px solid black;
+    background-color: white;
+    width: 100%;
+    height: 3vh;
+}
+
+.bar-filled {
+    width: 0%;
+    height: 100%;
+    transition: width 0.5s linear;
+}
+
+.immunity .bar-filled {
+    background-color: #8ff769a0;
+}
+
+.speed .bar-filled {
+    background-color: #ffff4ebb;
+}
+
+/* .bar-text-overlay {
+    font-size: 10px;
+} */
+
+#controls-strip {
+    rotate: 0.9deg;
+    background-color: rgb(255, 225, 0);
+    border: 3px solid black;
+    box-shadow: 3px 3px black;
+    padding-left: 1.5vw;
+    padding-right: 1.5vw;
+    height: 9vh;
+}
+
+.control {
+    background-color: white;
+    height: 5vh;
+    line-height: 5vh;
+    /* max-width: 10vw; */
+    aspect-ratio: 1/1;
+    margin-left: 0.5vw;
+    margin-right: 0.5vw;
+    text-align: center;
+    border: 3px solid black;
+    box-shadow: 2px 2px black;
+    font-size: 1rem;
 }
 
 #highScoreDisplayer {
@@ -27,10 +241,6 @@ body {
     width: 450px;
 }
 
-.progress-bar {
-    transition: 0.15s linear;
-}
-
 label.form-label {
     color:#0505f5;
 }
@@ -44,10 +254,9 @@ label.form-label {
 }
 
 
-.game-over {
+#game-over {
     animation: pulseText 1.5s infinite ease-in-out;
-    font-size: 28px;
-    font-weight: bold;
+    font-size: 3rem;
     color: #ff0000 !important;
 }
 
@@ -76,7 +285,6 @@ label.form-label {
 
 #death-cause {
     font-size: 24px;
-    font-weight: bold;
     color: #e0f000;
 }
 
@@ -123,7 +331,8 @@ label.form-label {
     box-shadow: 5px 5px 0 black;
     border-radius: 0;
     background: #76D7C4;
-    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-weight: light;
+    /* font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif; */
 }
 
 .table-container {
@@ -147,3 +356,7 @@ label.form-label {
     height: 1em;
     width: 1em;
 }
+
+/* * {
+    border: 1px black solid;
+} */

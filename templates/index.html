@@ -1,32 +1,119 @@
 <html>
 
 <head>
-    <meta charset="UTF-8">
     <title>Snake Game</title>
     <link rel="stylesheet" href="../static/css/bootstrap.min.css" type="text/css">
     <link rel="stylesheet" href="../static/css/styles.css" type="text/css">
 </head>
 
 <body>
-    <div id="mainBody" class="hidden flex-column align-items-center gap-2">
-            <!--TODO: high score message should be displayed for a fixed amount of time and then again it should be hidden-->
-            <p id="high-score-message" class="fw-bold d-none">Yay You beat the HighScore !!!</p>
-            <!--TODO: to make highscore visible , implement JS and change d-none to d-block to toggle visibility-->
-            <p id="highscoreDisplayer" class="high-score fw-bold d-none">HighScore: 2</p>
-            <p id="scoreDisplayer" class="fw-bold">Score: 2</p>
-        <div id="gameBody">
-            <canvas id="game" class="border border-3 border-dark rounded-0"></canvas>
-        </div>
-        <div id="displays" class="text-center fs-4">
-            <p id="timeDisplayer" class="fw-bold">Time: 0.000s</p>
-            <div id="immunityContainer" class="w-100 mt-2">
-                <div class="d-flex justify-content-between fw-bold mb-1">
-                    <span>Immunity</span>
-                    <span id="immunityTimeDisplayer">0s</span><!--TODO: Updation to be fixed by JS-->
+    <div id="mainBody" class="hidden">
+        <nav class="navbar navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <div class="d-flex align-items-center gap-3">
+                        <img id="brand-icon" src="../static/media/ui/game_icon.png">
+                        <span id="brand-title">Snake Game</span>
+                    </div>
+                </a>
+                <ul class="navbar-nav flex-row mx-auto">
+                    <li class="nav-item hidden">Show Stats</li>
+                </ul>
+                <ul class="navbar-nav flex-row">
+                    <li class="nav-item">
+                        <div id="highscore-navbar">
+                            High Score: <span class="high-score-value">2</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+            <div id="main-row" class="row justify-content-around gx-4">
+                <div id="left-panel" class="col-3">
+                    <div id="left-panel-cards" class="d-flex flex-column gap-4">
+                        <div id="score-card" class="info-card d-flex flex-column">
+                            <div class="info-card-header">Current Run Score</div>
+                            <div class="card-underline"></div>
+                            <div id="score-label">SCORE</div>
+                            <div id="card-score-displayer" class="score-value">2</div>
+                            <div class="row mx-0 gap-3">
+                                <div class="col">
+                                    <div class="small-card length d-flex flex-column">
+                                        <span class="small-card-header">LENGTH</span>
+                                        <span class="small-card-value length-value">2</span>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="small-card highscore d-flex flex-column">
+                                        <span class="small-card-header">HIGH SCORE</span>
+                                        <span class="small-card-value high-score-value">2</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="time-card" class="info-card d-flex flex-row justify-content-between align-items-center">
+                            <div class="info-card-header">Time: <span class="time-value">0.000s</span></div>
+                            <img id="time-icon" style="height: 10vh; aspect-ratio: 1 / 1;" src="../static/media/ui/time.png">
+                        </div>
+
+                        <div id="active-effects-card" class="info-card d-flex flex-column">
+                            <div class="info-card-header">Active Effects</div>
+                            <div class="card-underline"></div>
+                            <div id="progress-bars" class="d-flex flex-column gap-3">
+                                <div id="immunity-progress-bar" class="progress-bar-wrapper immunity d-flex flex-column gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img class="bar-icon" src="../static/media/ui/immunity.png">
+                                        <div class="bar-header">Immunity</div>
+                                    </div>
+                                    <div class="bar">
+                                        <div class="bar-filled">
+                                            <!-- <div class="bar-text-overlay">2.4/4</div> -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="speed-progress-bar" class="progress-bar-wrapper speed d-flex flex-column gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img class="bar-icon" src="../static/media/ui/speed.png">
+                                        <div class="bar-header">Speed</div>
+                                    </div>
+                                    <div class="bar">
+                                        <div class="bar-filled">
+                                            <!-- <div class="bar-text-overlay">60/100</div> -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <!--TODO: immunity-bar width to be controlled by JS-->
-                <div class="progress border border-2 border-dark rounded-5" style="height: 20px;">
-                    <div id="immunityBar" class="progress-bar bg-danger" style="width: 15%;"> </div>
+                <div id="right-panel" class="col-8 d-flex flex-column gap-4">
+                    <div id="game-window" class="d-flex flex-column">
+                        <div id="game-top-strip" class="d-flex justify-content-between">
+                            <span id="username-instrip">Welcome, <span class="username-value">guest_user</span></span>
+                            <span id="highscore-msg-instrip" class="mx-auto hidden">NEW HIGH SCORE!</span>
+                            <span id="active-effects-instrip"></span>
+                        </div>
+                        <div id="canvas-wrapper" class="d-flex justify-content-center align-items-center flex-grow-1">
+                            <canvas id="game"></canvas>
+                        </div>
+                    </div>
+                    <div id="controls-strip" class="d-flex align-items-center justify-content-between">
+                        <div id="WASD-controls" class="d-flex">
+                            <div class="control">W</div>
+                            <div class="control">A</div>
+                            <div class="control">S</div>
+                            <div class="control">D</div>
+                        </div>
+                        <div id="arrow-controls" class="d-flex">
+                            <div class="control">↑</div>
+                            <div class="control">←</div>
+                            <div class="control">↓</div>
+                            <div class="control">→</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -57,7 +144,7 @@
                         <table class="table">
                             <tr>
                                 <td >High Score</td>
-                                <td class=" high-score" id="start-high-score">0</td>
+                                <td class="high-score-value" id="start-high-score">0</td>
                             </tr>
                         </table>
                     </div>
@@ -117,7 +204,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3 border-3 border-dark">
                 <div class="modal-header">
-                    <h5 class="modal-title w-100 text-center game-over monospace" >Game Over !!</h5>
+                    <h5 class="modal-title w-100 text-center monospace" id="game-over">Game Over !!</h5>
                 </div>
 
                 <div class="modal-body">
@@ -127,25 +214,25 @@
                     <table id="deathStats" class="table">
                         <tr>
                             <td>High Score</td>
-                            <td class="high-score" id="death-high-score">0</td>
+                            <td class="high-score-value" id="death-high-score">0</td>
                         </tr>
                         <tr>
                             <td>Score</td>
-                            <td id="death-score">0</td>
+                            <td id="death-score" class="score-value">0</td>
                         </tr>
                         <tr>
                             <td>Time Survived</td>
-                            <td id="death-time-alive">0</td> 
+                            <td id="death-time-alive" class="time-value">0.000s</td> 
                         </tr>
                     </table>
 
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    <button class="btn btn-primary" data-bs-target="#startModal" data-bs-dismiss="modal"
-                        data-bs-toggle="modal">Retry</button>
                     <!--Opens Start Modal but changes a few elements resembling retry modal-->
                     <button class="btn btn-primary" data-bs-target="#statsModal" data-bs-dismiss="modal" data-bs-toggle="modal">Show Stats</button>
+                    <button class="btn btn-primary" data-bs-target="#startModal" data-bs-dismiss="modal"
+                        data-bs-toggle="modal">Retry</button>
                 </div>
             </div>
         </div>
@@ -159,7 +246,7 @@
                     <h5 class="modal-title w-100 text-center">Game Stats</h5>
                 </div>
                 <div class="modal-body">
-                    <h4 class="w-100 text-center" >High Score :<span class="high-score ms-3">0</span></h4>
+                    <h4 class="w-100 text-center">High Score :<span class="high-score-value ms-3">2</span></h4>
                     <div class="table-container">
                     <table class="table" id="game-stats">
                         <thead class="sticky-top">

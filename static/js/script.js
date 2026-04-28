@@ -1,23 +1,24 @@
 const fruits = {
-    "carrot": {name:"Carrot", score:1, sprite: "../static/media/sprites/fruits/carrot.png", rel_probability: 0, onEat: ateCarrots},
-    "triplecarrot": {name:"Triple Carrot", score:3, sprite:"../static/media/sprites/fruits/triplecarrot.png", rel_probability: 0, onEat: ateCarrots}, //TODO: probability to be written
-    "goldenapple": {name:"Golden Apple", score:0, sprite:"../static/media/sprites/fruits/goldenapple.png", rel_probability: 10, onEat: ateGoldenApple}, //TODO: fix probability
-    "speedupfruit": {name: "Energy", score: 1, sprite:"../static/media/sprites/fruits/speedupfruit.png", rel_probability: 5, onEat: ateSpeedUp}
+    "carrot": {name:"Carrot", score:1, sprite: "../static/media/sprites/fruits/carrot.png", rel_probability: 1, onEat: ateCarrots},
+    "triplecarrot": {name:"Triple Carrot", score:3, sprite:"../static/media/sprites/fruits/triplecarrot.png", rel_probability: 10, onEat: ateCarrots}, //TODO: probability to be written
+    "goldenapple": {name:"Golden Apple", score:0, sprite:"../static/media/sprites/fruits/goldenapple.png", rel_probability: 2, onEat: ateGoldenApple}, //TODO: fix probability
+    "speedupfruit": {name: "Energy", score: 1, sprite:"../static/media/sprites/fruits/speedupfruit.png", rel_probability: 1, onEat: ateSpeedUp}
 }
 
 var graphicsMode = "classic";
 
-const IMMUNITY_TICKS = 20;
+const IMMUNITY_TICKS = 30;
 const SPEEDUP_TICKS = 20;
 const SPEEDUP_FACTOR = 2;
-const CANVAS_HEIGHT = 300;
-const CANVAS_WIDTH = 300;
+const GRAPHICS_SCALE = 2;
 const TICK_RATE = 200; //time in ms
 const GRAPHICS_REFRESH_RATE = 100;
 
-const N_COLUMNS = 10;
-const N_ROWS = 10;
+const N_COLUMNS = 13;
+const N_ROWS = 13;
 const CELL_SIZE = 30;
+const CANVAS_HEIGHT = N_ROWS * CELL_SIZE;
+const CANVAS_WIDTH = N_COLUMNS * CELL_SIZE;
 
 const image_elems={} //dict containing <image_path>:<html img elem> pairs
 
@@ -33,10 +34,11 @@ class User {
     constructor(username = "guest_user") {
         this.username = username;
         this.records = [];
+        this.isNewHighScore = false;
     }
 
-    get highScore() {
-        return this.records.reduce((maxScore, record) => record.score > maxScore ? record.score : maxScore, 0);
+    highScore(myState) {
+        return [this.records.reduce((maxScore, record) => record.score > maxScore ? record.score : maxScore, 2)];
     }
 
     addRecord(record) {
@@ -93,7 +95,7 @@ class GameState {
         this.ctx = this.canvas.getContext("2d");
 
         // this.scale = window.devicePixelRatio || 1
-        this.scale = 2;
+        this.scale = GRAPHICS_SCALE;
 
         this.canvas.width = CANVAS_WIDTH * this.scale
         this.canvas.height = CANVAS_HEIGHT * this.scale
@@ -127,8 +129,6 @@ class GameState {
         this.fruitsUsed = Object.keys(fruits);
 
         this.inputHandlerFunction = null;
-
-        this.speedTicks = 0;
     }
 
     get isFinished() {
@@ -166,12 +166,13 @@ class Snake {
         this.prevTail = this.tail;
 
         this.color = "main";
+
+        this.speedTicks = 0;
     }
 
     get isImmune() {
         return this.immunityTicks > 0;
     }
-
     get length() {
         return this.body.length;
     }
@@ -345,13 +346,11 @@ function getDeathCause(myState) { // check death according to current pos and di
         causeOfDeath = "WALL"; 
     } else {
         let cells = myState.grid[next_x][next_y];
-        console.log(cells);
 
         if(cells.length!=0 && (cells[cells.length-1].type == "snake_body" || (!myState.snake.tailChanged && cells[0].type == "snake_tail"))) { 
             causeOfDeath = "SELF"; 
         }
     }
-    console.log(causeOfDeath);
     return causeOfDeath;
 }
 
@@ -365,7 +364,7 @@ function executeFuneral(myState, cause) { // perform actions reqd after game end
     let pad = (n) => String(n).padStart(2, '0');
     let formattedStartTime = `[${st.getFullYear()}-${pad(st.getMonth()+1)}-${pad(st.getDate())} ${pad(st.getHours())}:${pad(st.getMinutes())}:${pad(st.getSeconds())}]`;
 
-    let successfullyAdded = user.addRecord({"startTime": formattedStartTime, "score": myState.score, "cause": cause, "timeAlive": myState.snake.timeAlive});
+    let successfullyAdded = user.addRecord({"startTime": formattedStartTime, "score": myState.score, "cause": cause, "timeAlive": (myState.snake.timeAlive/1000).toFixed(3)});
     if(successfullyAdded) {
         user.saveLatestRecord();
     }
@@ -376,12 +375,8 @@ function executeFuneral(myState, cause) { // perform actions reqd after game end
 }
 
 function updateUIafterDeath(myState, cause) {
-    document.getElementById("death-score").innerText = myState.score;
     document.getElementById("death-cause").innerHTML = `Death by: ${cause}`;
-    document.getElementById("death-high-score").innerHTML = user.highScore;
-    document.getElementById("death-time-alive").innerHTML = `${(myState.snake.timeAlive/1000).toFixed(3)}s`;
-
-    document.getElementById("start-high-score").innerHTML = user.highScore;
+    updateUI(myState);
 
     let endModal = new bootstrap.Modal(document.getElementById("endModal"));
     endModal.show();
@@ -391,15 +386,24 @@ function updateUIafterDeath(myState, cause) {
 function updateState(myState) {
     updateDir(myState);
 
-    myState.speedTicks = Math.max(0, myState.speedTicks - 1);
-    if(myState.speedTicks == 0) { myState.tickRate = TICK_RATE; console.log("resetted!!")}
+    myState.snake.speedTicks = Math.max(0, myState.snake.speedTicks - 1);
+    if(myState.snake.speedTicks == 0) { myState.tickRate = TICK_RATE; }
 
     if(myState.snake.isImmune) {
         myState.snake.immunityTicks -= 1;
     }
 
+    let beatenHighScore = myState.score > user.highScore(myState);
+
     let [next_x, next_y] = myState.snake.nextPos(myState);
     myState.snake.growthBuffer += consumeFruitAt(myState, next_x, next_y);
+
+    if(!beatenHighScore && myState.score > user.highScore(myState)) {
+        document.getElementById("highscore-msg-instrip").classList.remove("hidden");
+        setTimeout(() => {
+            document.getElementById("highscore-msg-instrip").classList.add("hidden");
+        }, 3000);
+    }
 
     myState.snake.tailChanged = myState.snake.growthBuffer <= 0;
 
@@ -458,6 +462,9 @@ function validateUsername(username) {
 
 function start() {
     let username = document.getElementById("username").value;
+    for(let el of document.getElementsByClassName("username-value")) {
+        el.innerHTML = username;
+    }
     graphicsMode = document.getElementById("mode").value;
     if(!validateUsername(username)) {
         return;
@@ -470,7 +477,7 @@ function start() {
         Array.from(document.getElementsByClassName("start")).forEach(el => { el.classList.toggle("hidden"); });
         
         document.getElementById("mainBody").classList.toggle("hidden");
-        document.getElementById("mainBody").classList.toggle("d-flex");
+        // document.getElementById("mainBody").classList.toggle("d-flex");
 
         isFirst = false;
     }
@@ -642,20 +649,34 @@ function ateCarrots(fruit, myState) {
     playSound("ateCarrot");
 }
 function ateGoldenApple(fruit, myState) {
-    myState.snake.immunityTicks += IMMUNITY_TICKS;
+    myState.snake.immunityTicks = IMMUNITY_TICKS;
     myState.snake.color = "immune";
     playSound("immuneOn");
 }
 
 function ateSpeedUp(fruit, myState) {
-    myState.tickRate /= SPEEDUP_FACTOR;
-    myState.speedTicks += SPEEDUP_TICKS;
+    myState.tickRate = TICK_RATE / SPEEDUP_FACTOR;
+    myState.snake.speedTicks = SPEEDUP_TICKS;
 }
 
 function resetUI(myState) {
-    document.getElementById("scoreDisplayer").innerHTML = "Score: 2";
-    document.getElementById("timeDisplayer").innerHTML = "Time: 0.000s";
-    document.getElementById("immunityTimeDisplayer").innerHTML = "Immunity Time: 0.0s";
+    for(let el of document.getElementsByClassName("score-value")) {
+        el.innerHTML = 2;
+    }
+    for(let el of document.getElementsByClassName("time-value")) {
+        el.innerHTML = "0.000s";
+    }
+    for(let el of document.getElementsByClassName("length-value")) {
+        el.innerHTML = 2;
+    }
+
+    document.querySelector("#immunity-progress-bar .bar-filled").style.width = "0%";
+    document.querySelector("#speed-progress-bar .bar-filled").style.width = "0%";
+
+    document.getElementById("highscore-msg-instrip").classList.add("hidden");
+    document.getElementById("active-effects-instrip").innerHTML = "";
+
+    // document.getElementById("immunityTimeDisplayer").innerHTML = "Immunity Time: 0.0s";
 }
 
 function initGame(myState) {
@@ -688,10 +709,31 @@ function gameLoop(myState, lastStateUpdate = 0, lastCanvasUpdate = 0) {
 }
 
 function updateUI(myState) {
-    document.getElementById("scoreDisplayer").innerHTML = `Score: ${myState.score}`;
-    document.getElementById("timeDisplayer").innerHTML = `Time: ${(myState.snake.timeAlive/1000).toFixed(3)}s`;
-    let formattedImmunityTime = myState.snake.immunityTicks;
-    document.getElementById("immunityTimeDisplayer").innerHTML = `Immunity time: ${formattedImmunityTime}s`;
+    for(let el of document.getElementsByClassName("score-value")) {
+        el.innerHTML = myState.score;
+    }
+    for(let el of document.getElementsByClassName("time-value")) {
+        el.innerHTML = `${(myState.snake.timeAlive/1000).toFixed(3)}s`;
+    }
+    for(let el of document.getElementsByClassName("length-value")) {
+        el.innerHTML = myState.snake.length;
+    } 
+    for(let el of document.getElementsByClassName("high-score-value")) {
+        el.innerHTML = Math.max(myState.score, user.highScore(myState));
+    }
+
+    document.querySelector("#immunity-progress-bar .bar-filled").style.width = `${myState.snake.immunityTicks / IMMUNITY_TICKS * 100}%`;
+    document.querySelector("#speed-progress-bar .bar-filled").style.width = `${myState.snake.speedTicks / SPEEDUP_TICKS * 100}%`;
+
+    let effects = [];
+    myState.snake.immunityTicks > 0 ? effects.push("Immunity") : null;
+    myState.snake.speedTicks > 0 ? effects.push("Speed") : null;
+
+    if(effects.length > 0) {
+        document.getElementById("active-effects-instrip").innerHTML = `Active: ${effects.join(", ")}`;
+    } else {
+        document.getElementById("active-effects-instrip").innerHTML = "";
+    }
 }
 
 loadContent();
