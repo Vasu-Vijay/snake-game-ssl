@@ -8,7 +8,36 @@ operation=("Query_User" "Recent_Score" "Analytics" "Delete_Entries" "Log_Rotatio
 #first line of history.txt
 first_line="start_time,username,score,cause,time_alive"
 #To be used to store all users in history.txt
+check_history(){
+    if [[ $(grep -nv -E "^$" history.txt | cut -d ":" -f 1) -eq 1 ]];then
+        if [[ -f history.tar.gz ]];then
+            local attempt=0
+            while true;do
+                read -ern 1 -p $'\e[31mNo Records in history.txt\nA bakup log file exist do you want to restore it or exit? (1/2) \e[0m' input
+                printf "\n"
+                if [[ "$input" == "q" ]];then
+                    Exit
+                elif ! valid_command 2 "$input";then
+                    printf "\e[31mEnter a valid command\e[0m\n"
+                elif [[ "$input" == 2 ]]; then
+                    Exit
+                elif [[ "$input" == 1 ]]; then
+                    Restore_Logs
+                    break
+                fi
+            done
+        else
+            printf "\e[31mNo Records in history.txt\nNo backup file found.\n\e[32m____________Exiting the program." 
+            for i in {1..5};do
+                sleep 1
+                printf "."
+            done
+            Exit
+        fi
+    fi
+}
 update_stats(){
+    check_history
     first_game_time=$(tail -n +2 history.txt | sort | head -1 | cut -d "]" -f1 | cut -d "[" -f2)
     last_game_time=$(tail -n +2 history.txt | sort | tail -1 | cut -d "]" -f1 | cut -d "[" -f2)
     user_list=":$(tail -n +2 history.txt | cut -d',' -f2 | sort -u | tr '\n' ':' )"
@@ -508,7 +537,7 @@ function Analytics(){
                     }
                 }
             }' history.txt > history.tmp
-            if [[ $(wc -l history.tmp | cut -d " " -f 1) -eq 1 ]];then
+            if [[ $(grep -nv -E "^$" history.tmp | cut -d ":" -f 1) -eq 1 ]];then
                 printf "\e[31mNo data for selected user and time range found\n\e[0m"
             elif [[ "$user" == "" ]]; then
                 tail -n +2 history.tmp | sort -rnt "," -k 3,3 | calculate_records 
@@ -668,7 +697,6 @@ function Delete_Entries(){
 init(){
     [ ! -f "history.txt" ] && printf "\033c" && printf "\e[31mhistory.txt file not found.\e[0m\n" && exit
     [[ $(head -1 history.txt) != "$first_line" ]] && printf "\033c" && printf "\e[31mInvalid file format.\e[0m\n" && exit
-    [[ $(head -1 history.txt) == "$first_line" ]] && [[ $(wc -l history.txt | cut -d " " -f 1) -eq 1 ]] && printf "\033c" && printf "\e[31mhistory.txt has no records stored.\e[0m\n" && exit
     update_stats
     history -c #prevents terminal history to be accessed in the process
     printf "\033c"
