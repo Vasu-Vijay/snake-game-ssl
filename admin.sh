@@ -9,7 +9,7 @@ operation=("Query_User" "Recent_Score" "Analytics" "Delete_Entries" "Log_Rotatio
 first_line="start_time,username,score,cause,time_alive"
 #To be used to store all users in history.txt
 check_history(){
-    if [[ $(grep -nv -E "^$" history.txt | cut -d ":" -f 1) -eq 1 ]];then
+    if [[ $(grep -nv -E "^$" history.txt | wc -l | cut -d " " -f 1) -eq 1 ]];then
         if [[ -f history.tar.gz ]];then
             local attempt=0
             while true;do
@@ -218,9 +218,13 @@ function tabular_display(){
 }
 
 function output_table(){ 
-    column -t -R 1,2,3,4,5 -s ","  -o " │ " |awk -F "│" '
+    #column -t -R 1,2,3,4,5 -s ","  -o " │ " |awk -F "│" '
+    awk -F "," '
     {
         lines[NR] = $0
+        for(i=1 ;i<6;i++){
+            field[NR][i]=$i
+        }
         #stores the max field width in an array
         for (f = 1; f <= 5; f++) {
             if (length($f) > max_col[f]) {
@@ -239,8 +243,10 @@ function output_table(){
         #prints the records and border after it
         for(l=1;l<NR;l++){
             printf "│"
-            printf lines[l]
-            printf "│\n"
+            for(f=1;f<6;f++){
+                printf "%-"max_col[f]"s│",field[l][f]
+            }
+            printf "\n"
             printf "├"
             for (i = 1; i <= 5; i++) {
                 for (j = 1; j <= max_col[i]; j++) {printf "─"}
@@ -249,8 +255,10 @@ function output_table(){
             printf "┤\n"
         }
         printf "│"
-        printf lines[l]
-        printf "│\n"
+        for(f=1;f<6;f++){
+            printf "%-"max_col[f]"s│",field[l][f]
+        }
+        printf "\n"
         printf "└"
 
         #prints the lower border of table
@@ -537,7 +545,7 @@ function Analytics(){
                     }
                 }
             }' history.txt > history.tmp
-            if [[ $(grep -nv -E "^$" history.tmp | cut -d ":" -f 1) -eq 1 ]];then
+            if [[ $(grep -nv -E "^$" history.tmp | wc -l | cut -d " " -f 1) -eq 1 ]];then
                 printf "\e[31mNo data for selected user and time range found\n\e[0m"
             elif [[ "$user" == "" ]]; then
                 tail -n +2 history.tmp | sort -rnt "," -k 3,3 | calculate_records 
