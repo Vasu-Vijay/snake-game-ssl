@@ -397,14 +397,103 @@ function calculate_records(){
             }
         }
         ' | less
+    printf "\033c"
 }
+
+timestamp_range(){
+    printf "\e[35mEnter the range of timestamps to delete entries\n"
+    printf "Enter the  timestamp in the format ( YYYY-MM-DD HH:MM:SS )\n\e[0m"
+    local attempt=0
+    while true ;do
+        read -e -p $'\e[33mStart Time : \e[0m' start_time
+        if valid_command_default "$start_time"; then
+            start_time="$first_game_time"
+            break
+        elif valid_command_quit "$start_time"; then
+            return 1
+        elif ! Validate_Timestamp "$start_time" ; then
+            if [[ "$attempt" -eq 0 ]];then
+                printf "\e[1A\e[K"
+            else 
+                printf "\e[2A\e[K"
+            fi
+            printf "\e[31mEnter a valid Timestamp\n\e[0m"
+        else
+            break
+        fi
+        attempt=1
+    done
+    attempt=0
+    while true ;do
+        read -e -p $'\e[33mEnd Time : \e[0m' end_time
+        if valid_command_default "$end_time";then
+            end_time="$last_game_time"
+            break
+        elif valid_command_quit "$end_time"; then
+            return 1
+        elif ! Validate_Timestamp "$end_time" ; then
+            if [[ "$attempt" -eq 0 ]];then
+                printf "\e[1A\e[K"
+            else 
+                printf "\e[2A\e[K"
+            fi
+            printf "\e[31mEnter a valid Timestamp\n\e[0m"
+        else
+            break
+        fi
+        attempt=1
+    done    
+}
+
 #Analyse the data of players of all games
 function Analytics(){
     printf "\033c"
-    if [[ "$user" == "" ]]; then
-        tail -n +2 history.txt | sort -rnt "," -k 3,3 | calculate_records 
-    else
-        tail -n +2 history.txt | grep ",$user," | sort -rnt "," -k 3,3 | calculate_records
+    while true; do
+        local attempt=0
+        read -erp $'\e[33mDo you want to view filter analysis based on timestamp or view for entire file? (1/2) \e[0m' input
+        if valid_command_quit "$input";then
+            return 0
+        elif ! valid_command 2 "$input";then
+            if [[ "$attempt" -eq 0 ]];then
+                printf "\e[1A\e[K"
+            else 
+                printf "\e[2A\e[K"
+            fi
+            printf "\e[31mEnter a valid Timestamp\n\e[0m"
+        else
+            break
+        fi
+        attempt=1
+    done
+    
+    if [[ "$input" == 2 ]]; then
+        if [[ "$user" == "" ]]; then
+            tail -n +2 history.txt | sort -rnt "," -k 3,3 | calculate_records 
+        else
+            tail -n +2 history.txt | grep ",$user," | sort -rnt "," -k 3,3 | calculate_records
+        fi
+    elif [[ "$input" == 1 ]]; then
+        if ! timestamp_range; then
+            return 1
+        else
+            awk -F "," -v start="$start_time" -v end="$end_time" '{
+                if(NR == 1){print $0}
+                else {
+                    timestamp = $1
+                    sub(/^\[/, "", timestamp)
+                    sub(/\]$/, "", timestamp)
+                    if(timestamp >= start && timestamp <= end){
+                        print $0
+                    }
+                }
+            }' history.txt > history.tmp
+            if [[ "$user" == "" ]]; then
+                tail -n +2 history.tmp | sort -rnt "," -k 3,3 | calculate_records 
+            else
+                tail -n +2 history.tmp | grep ",$user," | sort -rnt "," -k 3,3 | calculate_records
+            fi
+            rm history.tmp
+        fi
     fi
 }
 
@@ -482,48 +571,9 @@ remove_entries_timestamp(){
 }
 
 delete_timestamps(){
-    printf "\e[35mEnter the range of timestamps to delete entries\n"
-    printf "Enter the  timestamp in the format ( YYYY-MM-DD HH:MM:SS )\n\e[0m"
-    local attempt=0
-    while true ;do
-        read -e -p $'\e[33mStart Time : \e[0m' start_time
-        if valid_command_default "$start_time"; then
-            start_time="$first_game_time"
-            break
-        elif valid_command_quit "$start_time"; then
-            return 0
-        elif ! Validate_Timestamp "$start_time" ; then
-            if [[ "$attempt" -eq 0 ]];then
-                printf "\e[1A\e[K"
-            else 
-                printf "\e[2A\e[K"
-            fi
-            printf "\e[31mEnter a valid Timestamp\n\e[0m"
-        else
-            break
-        fi
-        attempt=1
-    done
-    attempt=0
-    while true ;do
-        read -e -p $'\e[33mEnd Time : \e[0m' end_time
-        if valid_command_default "$end_time";then
-            end_time="$last_game_time"
-            break
-        elif valid_command_quit "$end_time"; then
-            return 0
-        elif ! Validate_Timestamp "$end_time" ; then
-            if [[ "$attempt" -eq 0 ]];then
-                printf "\e[1A\e[K"
-            else 
-                printf "\e[2A\e[K"
-            fi
-            printf "\e[31mEnter a valid Timestamp\n\e[0m"
-        else
-            break
-        fi
-        attempt=1
-    done    
+    if ! timestamp_range;then
+        return 1
+    fi
     attempt=0
     while true; do
         read -e -p $'\e[31mAre you sure you want to delete the records? (y/n) \e[0m' confirmation
