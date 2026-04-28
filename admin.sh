@@ -12,6 +12,12 @@ update_stats(){
     first_game_time=$(tail -n +2 history.txt | sort | head -1 | cut -d "]" -f1 | cut -d "[" -f2)
     last_game_time=$(tail -n +2 history.txt | sort | tail -1 | cut -d "]" -f1 | cut -d "[" -f2)
     user_list=":$(tail -n +2 history.txt | cut -d',' -f2 | sort -u | tr '\n' ':' )"
+    if [[ "$user" == "" || "$user_list" =~ ":$user:" ]]; then # *""* does literal match i.e. avoids regex if any in the ""
+        :
+    else
+        user=""
+        printf "\e[32mSelected User has been changed to all due to no remaining records of previously chosen user\n\e[0m"
+    fi
 }
 
 #To be used to validate if command entered is correct or not
@@ -235,7 +241,7 @@ function menu_display(){
         tabular_display
         read -e -p $'\e[33mEnter command : \e[0m' command #bash does not interpret escaping inside "" but understands it in $''
 
-        if valid_command_quit "$command"; then
+        if [[ "$command" == 'q' ]]; then
             Exit
         elif valid_command ${#options[@]} $command; then
             break
@@ -378,7 +384,12 @@ function Sorted_View(){
 }  
 
 function calculate_records(){
-    awk -F "," '{
+    awk -F "," '
+        BEGIN {
+            death["SELF"]=0
+            death["WALL"]=0
+        }
+        {
             score+=$3
             time+=$5
             death[$4]+=1
@@ -393,6 +404,9 @@ function calculate_records(){
             for(i in death){
                 printf  i ":" death[i] "    " 
             }
+            printf "\nFraction of Wall Deaths : "
+            if(death["SELF"]==0){printf 1}
+            else {printf death["WALL"]/(death["WALL"] + death["SELF"])}
             printf "\n\nList of Entries with Max Score\n\n"
             for(i in max_score_detail){
                 print max_score_detail[i]
@@ -455,8 +469,8 @@ timestamp_range(){
 #Analyse the data of players of all games
 function Analytics(){
     printf "\033c"
+    local attempt=0    
     while true; do
-        local attempt=0
         read -erp $'\e[33mDo you want to view filter analysis based on timestamp or view for entire file? (1/2) \e[0m' input
         if valid_command_quit "$input";then
             return 1
@@ -466,7 +480,7 @@ function Analytics(){
             else 
                 printf "\e[2A\e[K"
             fi
-            printf "\e[31mEnter a valid Timestamp\n\e[0m"
+            printf "\e[31mEnter a valid Command\n\e[0m"
         else
             break
         fi
@@ -577,6 +591,8 @@ remove_entries_timestamp(){
         }
     }' history.txt > history.tmp
     mv history.tmp history.txt
+    printf "\e[32mhistory.txt has been updated\e[0m\n"
+    update_stats
 }
 
 delete_timestamps(){
@@ -624,6 +640,8 @@ delete_misformatted_records(){
     mv history.tmp history.txt
     printf "\033c"
     printf "\e[32mNo misformated Records Remains\e[0m\n"
+    printf "\e[32mhistory.txt has been updated\e[0m\n"
+    update_stats
 }
 #Delete Entries from history.txt
 function Delete_Entries(){
