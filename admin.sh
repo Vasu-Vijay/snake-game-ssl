@@ -16,10 +16,6 @@ update_stats(){
 
 #To be used to validate if command entered is correct or not
 function valid_command(){
-    
-    if  valid_command_quit "$2" ;then
-        return 0
-    fi
     if [[ "$2" =~ ^[1-$1]$ || "$2" == $'\x1b' ]]; then 
         return 0
     else 
@@ -239,7 +235,9 @@ function menu_display(){
         tabular_display
         read -e -p $'\e[33mEnter command : \e[0m' command #bash does not interpret escaping inside "" but understands it in $''
 
-        if valid_command ${#options[@]} $command; then
+        if valid_command_quit "$command"; then
+            Exit
+        elif valid_command ${#options[@]} $command; then
             break
         else 
             printf "\033c" 
@@ -332,6 +330,8 @@ function Sorted_View(){
         if valid_command_default "$key"; then
             key=4
             break
+        elif valid_command_quit "$key"; then
+            return 1
         elif valid_command 4 $key; then
             break
         else 
@@ -347,6 +347,8 @@ function Sorted_View(){
         if valid_command_default "$command";then
             command=1
             break
+        elif valid_command_quit "$command"; then
+            return 1
         elif valid_command 2 $command; then
             break
         else
@@ -443,6 +445,11 @@ timestamp_range(){
         fi
         attempt=1
     done    
+
+    if [[ "$end_time" < "$start_time" ]];then
+        printf "\e[31mEnd time should be greater than or equal to start time\n\e[0m"
+        return 1
+    fi
 }
 
 #Analyse the data of players of all games
@@ -452,7 +459,7 @@ function Analytics(){
         local attempt=0
         read -erp $'\e[33mDo you want to view filter analysis based on timestamp or view for entire file? (1/2) \e[0m' input
         if valid_command_quit "$input";then
-            return 0
+            return 1
         elif ! valid_command 2 "$input";then
             if [[ "$attempt" -eq 0 ]];then
                 printf "\e[1A\e[K"
@@ -487,7 +494,9 @@ function Analytics(){
                     }
                 }
             }' history.txt > history.tmp
-            if [[ "$user" == "" ]]; then
+            if [[ $(wc -l history.tmp | cut -d " " -f 1) -eq 1 ]];then
+                printf "\e[31mNo data for selected user and time range found\n\e[0m"
+            elif [[ "$user" == "" ]]; then
                 tail -n +2 history.tmp | sort -rnt "," -k 3,3 | calculate_records 
             else
                 tail -n +2 history.tmp | grep ",$user," | sort -rnt "," -k 3,3 | calculate_records
@@ -518,7 +527,7 @@ delete_user(){
     while true; do
         read -e -p $'\e[33mSpecify a User : \e[0m' player
         if valid_command_quit "$player"; then
-            return 0
+            return 1
         elif [[ "$player" != "" ]] && valid_user "$player" ; then
             break
         else
@@ -536,7 +545,7 @@ delete_user(){
     while true; do
         read -e -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
         if valid_command_quit "$confirmation"; then
-            return 0
+            return 1
         elif [[ $confirmation == "y" ]]; then
             remove_entries_user "$player"
             break
@@ -578,7 +587,7 @@ delete_timestamps(){
     while true; do
         read -e -p $'\e[31mAre you sure you want to delete the records? (y/n) \e[0m' confirmation
         if valid_command_quit "$confirmation";then
-            return 0
+            return 1
         elif [[ "$confirmation" == "n" ]]; then
             printf "\033c"
             return 0
@@ -625,8 +634,9 @@ function Delete_Entries(){
         options=("1] Specific User" "2] Timestamp" "3] Misformatted Records")
         tabular_display
         read -e -p $'\e[33mChoose a method to delete : \e[0m' method
-
-        if valid_command 3 $method; then
+        if valid_command_quit "$method"; then
+            return 1
+        elif valid_command 3 $method; then
             break
         else 
             printf "\033c" 
