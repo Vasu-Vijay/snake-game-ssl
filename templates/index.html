@@ -121,8 +121,7 @@
 
 
     <!--Basic Start Modal-->
-    <div class="modal fade show" id="startModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        style="display:block;">
+    <div class="modal fade" id="startModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3 border-3 border-dark">
                 <div class="modal-header">
@@ -160,7 +159,7 @@
                     <div class="d-flex justify-content-between">
                         <button class="btn btn-primary" data-bs-target="#rulesModal" data-bs-toggle="modal"
                             data-bs-dismiss="modal"><img src="../static/media/ui/rules.png"class="icon">Rules</button>
-                        <button class="btn btn-primary" id="startbtn"><img src="../static/media/ui/play_button.png"class="icon">Start Game</button>
+                        <button class="btn btn-primary" id="startbtn"><img src="../static/media/ui/play_button.png" class="icon">Start Game</button>
                     </div>
 
                 </div>
@@ -271,10 +270,6 @@
     <script src="../static/js/bootstrap.bundle.min.js"></script>
     <script src="../static/js/data.js"></script>
     <script src="../static/js/script.js"></script>
-    <script>
-        const modal = new bootstrap.Modal(document.getElementById('startModal'));
-        modal.show();
-    </script>
 </body>
 
 </html>

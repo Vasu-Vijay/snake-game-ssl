@@ -201,6 +201,8 @@ class Cell {
     }
 }
 
+var startModal = new bootstrap.Modal(document.getElementById("startModal"));
+
 function loadImages(images) {
     const promises = images.map(src => {
         return new Promise((resolve, reject) => {
@@ -461,27 +463,31 @@ function validateUsername(username) {
 }
 
 function start() {
-    let username = document.getElementById("username").value;
-    for(let el of document.getElementsByClassName("username-value")) {
-        el.innerHTML = username;
-    }
-    graphicsMode = document.getElementById("mode").value;
-    if(!validateUsername(username)) {
-        return;
-    }
-    user.username = username;
-    let startModal=bootstrap.Modal.getInstance(document.getElementById("startModal"));
-    startModal.hide();
-    if(isFirst) {
-        Array.from(document.getElementsByClassName("retry")).forEach(el => { el.classList.toggle("hidden"); });
-        Array.from(document.getElementsByClassName("start")).forEach(el => { el.classList.toggle("hidden"); });
-        
-        document.getElementById("mainBody").classList.toggle("hidden");
-        // document.getElementById("mainBody").classList.toggle("d-flex");
 
-        isFirst = false;
-    }
-    initGameState();
+    startModal.hide();
+
+    document.getElementById("startModal").addEventListener("hidden.bs.modal", () => {
+        let username = document.getElementById("username").value;
+        for(let el of document.getElementsByClassName("username-value")) {
+            el.innerHTML = username;
+        }
+        graphicsMode = document.getElementById("mode").value;
+        if(!validateUsername(username)) {
+            return;
+        }
+        user.username = username;
+
+        if(isFirst) {
+            Array.from(document.getElementsByClassName("retry")).forEach(el => { el.classList.toggle("hidden"); });
+            Array.from(document.getElementsByClassName("start")).forEach(el => { el.classList.toggle("hidden"); });
+            
+            document.getElementById("mainBody").classList.toggle("hidden");
+            // document.getElementById("mainBody").classList.toggle("d-flex");
+
+            isFirst = false;
+        }
+        initGameState();
+    }, { once: true });
 }
 
 function initGameState() {
@@ -747,3 +753,5 @@ document.getElementById("startbtn").addEventListener("click", start);
 //     initGameState();
 //     updateTimeDisplays(+new Date());
 // });
+
+startModal.show();
