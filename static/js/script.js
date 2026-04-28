@@ -1,7 +1,7 @@
 const fruits = {
-    "carrot": {name:"Carrot", score:1, sprite: "../static/media/sprites/fruits/carrot.png", rel_probability: 1, onEat: ateCarrots},
-    "triplecarrot": {name:"Triple Carrot", score:3, sprite:"../static/media/sprites/fruits/triplecarrot.png", rel_probability: 1, onEat: ateCarrots}, //TODO: probability to be written
-    "goldenapple": {name:"Golden Apple", score:0, sprite:"../static/media/sprites/fruits/goldenapple.png", rel_probability: 1, onEat: ateGoldenApple}, //TODO: fix probability
+    "carrot": {name:"Carrot", score:1, sprite: "../static/media/sprites/fruits/carrot.png", rel_probability: 0, onEat: ateCarrots},
+    "triplecarrot": {name:"Triple Carrot", score:3, sprite:"../static/media/sprites/fruits/triplecarrot.png", rel_probability: 0, onEat: ateCarrots}, //TODO: probability to be written
+    "goldenapple": {name:"Golden Apple", score:0, sprite:"../static/media/sprites/fruits/goldenapple.png", rel_probability: 10, onEat: ateGoldenApple}, //TODO: fix probability
     "speedupfruit": {name: "Energy", score: 1, sprite:"../static/media/sprites/fruits/speedupfruit.png", rel_probability: 5, onEat: ateSpeedUp}
 }
 
@@ -161,8 +161,7 @@ class Snake {
         this.dir = {x: 1, y: 0};
         this.prevdir = {x: 1, y: 0};
 
-        this.immunityTime = 0;
-        this.immunityStartTime = undefined;
+        this.immunityTicks = 0;
         this.timeAlive = 0;
         this.prevTail = this.tail;
 
@@ -170,7 +169,7 @@ class Snake {
     }
 
     get isImmune() {
-        return this.immunityTime > 0;
+        return this.immunityTicks > 0;
     }
 
     get length() {
@@ -183,10 +182,6 @@ class Snake {
         return this.body[this.length - 1];
     }
     
-    immunityTicks(myState) {
-        return Math.floor(this.immunityTime/myState.tickRate);
-    }
-
     nextPos(myState) {
         let next_x = this.head.x + this.dir.x;
         let next_y = this.head.y + this.dir.y;
@@ -329,7 +324,7 @@ function updateCanvas(myState) {
     myState.frameNum += 1;
 
     if(myState.snake.isImmune) {
-        if(myState.snake.immunityTicks(myState) < 5) {
+        if(myState.snake.immunityTicks < 5) {
             myState.snake.color == "main" ? myState.snake.color = "immune" : myState.snake.color = "main";
         }
     } else {
@@ -398,6 +393,10 @@ function updateState(myState) {
 
     myState.speedTicks = Math.max(0, myState.speedTicks - 1);
     if(myState.speedTicks == 0) { myState.tickRate = TICK_RATE; console.log("resetted!!")}
+
+    if(myState.snake.isImmune) {
+        myState.snake.immunityTicks -= 1;
+    }
 
     let [next_x, next_y] = myState.snake.nextPos(myState);
     myState.snake.growthBuffer += consumeFruitAt(myState, next_x, next_y);
@@ -643,8 +642,7 @@ function ateCarrots(fruit, myState) {
     playSound("ateCarrot");
 }
 function ateGoldenApple(fruit, myState) {
-    myState.snake.immunityTime += IMMUNITY_TICKS * myState.tickRate;
-    myState.snake.immunityStartTime = performance.now();
+    myState.snake.immunityTicks += IMMUNITY_TICKS;
     myState.snake.color = "immune";
     playSound("immuneOn");
 }
@@ -683,10 +681,6 @@ function gameLoop(myState, lastStateUpdate = 0, lastCanvasUpdate = 0) {
     }
 
     myState.snake.timeAlive = curTime - myState.startTime;  /////TODO: ~~~~!!!!!!!!!!!! change the logic to do floor to the refresh rate otherwise unfair leaderboard !!!!!!!!!!!!!!!!!!!!~~~~~
-    if(myState.snake.isImmune) {
-        myState.snake.immunityTime = IMMUNITY_TICKS * myState.tickRate - (curTime - myState.snake.immunityStartTime);
-        myState.snake.immunityTime = Math.max(0, myState.snake.immunityTime);
-    }
 
     updateUI(myState);
 
@@ -696,7 +690,7 @@ function gameLoop(myState, lastStateUpdate = 0, lastCanvasUpdate = 0) {
 function updateUI(myState) {
     document.getElementById("scoreDisplayer").innerHTML = `Score: ${myState.score}`;
     document.getElementById("timeDisplayer").innerHTML = `Time: ${(myState.snake.timeAlive/1000).toFixed(3)}s`;
-    let formattedImmunityTime = (Math.trunc(myState.snake.immunityTime/100)/10).toFixed(1);
+    let formattedImmunityTime = myState.snake.immunityTicks;
     document.getElementById("immunityTimeDisplayer").innerHTML = `Immunity time: ${formattedImmunityTime}s`;
 }
 
