@@ -38,9 +38,9 @@ check_history(){
 }
 update_stats(){
     check_history
-    first_game_time=$(tail -n +2 history.txt | sort | head -1 | cut -d "]" -f1 | cut -d "[" -f2)
-    last_game_time=$(tail -n +2 history.txt | sort | tail -1 | cut -d "]" -f1 | cut -d "[" -f2)
-    user_list=":$(tail -n +2 history.txt | cut -d',' -f2 | sort -u | tr '\n' ':' )"
+    first_game_time=$(grep -vE "^$" history.txt |tail -n +2 | sort | head -1 | cut -d "]" -f1 | cut -d "[" -f2)
+    last_game_time=$(grep -vE "^$" history.txt |tail -n +2 | sort | tail -1 | cut -d "]" -f1 | cut -d "[" -f2)
+    user_list=":$(grep -vE "^$" history.txt |tail -n +2 | cut -d',' -f2 | sort -u | tr '\n' ':' )"
     if [[ "$user" == "" || "$user_list" =~ ":$user:" ]]; then # *""* does literal match i.e. avoids regex if any in the ""
         :
     else
@@ -333,9 +333,9 @@ Query_User(){
 Recent_Score(){
     printf "\033c"
     if [ "$user" == "" ]; then {
-        (echo "$first_line"; tail -n +2 history.txt |sort -r ) | output_table
+        (echo "$first_line";grep -vE "^$" history.txt |tail -n +2 |sort -r ) | output_table
     } else {
-        (echo "$first_line"; tail -n +2 history.txt | sort -r ) | awk -F "," -v user="$user" '
+        (echo "$first_line";grep -vE "^$" history.txt |tail -n +2 | sort -r ) | awk -F "," -v user="$user" '
             {
                 if(NR ==1 ) {print $0}
                 else if($2 == user){
@@ -419,20 +419,20 @@ Sorted_View(){
         done
         if [[ "$command" == 2 ]];then {
             #outputs the top line of history.txt and then sort and then send both to output table
-            { echo "$first_line";tail -n +2 history.txt | sort -fbdr -t "," -k2,2 -k3,3nr -k5,5 ;} | output_table 
+            { echo "$first_line";grep -vE "^$" history.txt | tail -n +2 | sort -fbdr -t "," -k2,2 -k3,3nr -k5,5 ;} | output_table 
         } elif [[ "$command" == 'q' ]];then {
             printf "\033c"
             return
         } else {
-            { echo "$first_line";tail -n +2 history.txt | sort -fbd -t "," -k2,2 -k3,3nr -k5,5 ;} | output_table
+            { echo "$first_line";grep -vE "^$" history.txt | tail -n +2 | sort -fbd -t "," -k2,2 -k3,3nr -k5,5 ;} | output_table
         }
         fi
     elif [[ "$key" == '2' ]];then {
-        { echo "$first_line";tail -n +2 history.txt | sort -rnt "," -k 5,5;} | output_table
+        { echo "$first_line";grep -vE "^$" history.txt |tail -n +2 | sort -rnt "," -k 5,5;} | output_table
     } elif [[ "$key" == '3' ]];then {
-        { echo "$first_line";tail -n +2 history.txt | sort -rnt "," -k 3,3;} | output_table
+        { echo "$first_line";grep -vE "^$" history.txt |tail -n +2 | sort -rnt "," -k 3,3;} | output_table
     } elif [[ "$key" == "4" ]];then {
-        { echo "$first_line";tail -n +2 history.txt |sort -rt "," -k 1;} | output_table
+        { echo "$first_line";grep -vE "^$" history.txt |tail -n +2 |sort -rt "," -k 1;} | output_table
     } fi 
 
     printf "\033c"
@@ -547,9 +547,9 @@ Analytics(){
     
     if [[ "$input" == 2 ]]; then
         if [[ "$user" == "" ]]; then
-            tail -n +2 history.txt | sort -rnt "," -k 3,3 | calculate_records 
+            grep -vE "^$" history.txt |tail -n +2 | sort -rnt "," -k 3,3 | calculate_records 
         else
-            tail -n +2 history.txt | grep ",$user," | sort -rnt "," -k 3,3 | calculate_records
+            grep -vE "^$" history.txt |tail -n +2 | grep ",$user," | sort -rnt "," -k 3,3 | calculate_records
         fi
     elif [[ "$input" == 1 ]]; then
         if ! timestamp_range; then
