@@ -223,7 +223,7 @@ output_table(){
     {
         lines[NR] = $0
         for(i=1 ;i<6;i++){
-            field[NR][i]=$i
+            field[NR,i]=$i
         }
         #stores the max field width in an array
         for (f = 1; f <= 5; f++) {
@@ -244,7 +244,7 @@ output_table(){
         for(l=1;l<NR;l++){
             printf "│"
             for(f=1;f<6;f++){
-                printf "%-"max_col[f]"s│",field[l][f]
+                printf "%-"max_col[f]"s│",field[l,f]
             }
             printf "\n"
             printf "├"
@@ -256,7 +256,7 @@ output_table(){
         }
         printf "│"
         for(f=1;f<6;f++){
-            printf "%-"max_col[f]"s│",field[l][f]
+            printf "%-"max_col[f]"s│",field[l,f]
         }
         printf "\n"
         printf "└"
