@@ -50,8 +50,8 @@ update_stats(){
 }
 
 #To be used to validate if command entered is correct or not
-function valid_command(){
-    if [[ "$2" =~ ^[1-$1]$ || "$2" == $'\x1b' ]]; then 
+valid_command(){
+    if [[ "$2" =~ ^[1-$1]$ ]]; then 
         return 0
     else 
         return 1
@@ -76,8 +76,8 @@ valid_command_default(){
     fi
 }
 #To be used to validate if user has input valid user or not
-function valid_user(){
-    if [[ "$1" == $'\x1b' || $user_list =~ ":$1:" || "$1" == "" ]]; then
+valid_user(){
+    if [[ $user_list =~ ":$1:" || "$1" == "" ]]; then
         return 0
     else 
         return 1
@@ -85,7 +85,7 @@ function valid_user(){
 }
 
 #To be used to validate timestamp
-function Validate_Timestamp(){
+Validate_Timestamp(){
     if [[ "$*" =~ ^[0-9]+-[0-9]{2}-[0-9]{2}\ [0-9]{2}:[0-9]{2}:[0-9]{2}$ ]]; then
         if date -d "$*" "+%Y-%m-%d %H:%M:%S" >/dev/null 2>&1 ; then
             return 0
@@ -97,7 +97,7 @@ function Validate_Timestamp(){
     fi
 }
 #Used to display Menu in a tabluar form which is compatible with size of terminal
-function tabular_display(){
+tabular_display(){
     COLS=3 
     PADDING=1
 
@@ -217,7 +217,7 @@ function tabular_display(){
     print_border_bottom
 }
 
-function output_table(){ 
+output_table(){ 
     #column -t -R 1,2,3,4,5 -s ","  -o " │ " |awk -F "│" '
     awk -F "," '
     {
@@ -272,11 +272,11 @@ function output_table(){
 }
 
 #Displays menu with selectable operations on terminal.
-function menu_display(){
+menu_display(){
     while true; do
         options=("1] Query about a Specific User" "2] View scores of recent games" "3] View Analytics" "4] Delete Entries" "5] Log Rotation" "6] Restore Logs" "7] Sorted View" "8] Exit")
         tabular_display
-        read -e -p $'\e[33mEnter command : \e[0m' command #bash does not interpret escaping inside "" but understands it in $''
+        read -ern 1 -p $'\001\e[33m\002Enter command : \001\e[0m\002' command #bash does not interpret escaping inside "" but understands it in $''
 
         if [[ "$command" == 'q' ]]; then
             Exit
@@ -291,16 +291,16 @@ function menu_display(){
 }
 
 #Exit the menu
-function Exit(){
+Exit(){
     printf "\033c"
     exit
 }
 
 #Specifying user to be analysed
-function Query_User(){
+Query_User(){
     local attempt=0
     while true; do
-    read -e -p $'\e[33mEnter Username : \e[0m' input
+    read -er -p $'\001\e[33m\002Enter Username : \001\e[0m\002' input
         if valid_command_quit "$input";then
             return 0
         elif valid_user "$input" ; then 
@@ -320,7 +320,8 @@ function Query_User(){
             if [[ "$attempt" -eq 0 ]];then
                 printf "\e[1A\e[K"
             else 
-                printf "\e[2A\e[K"
+                printf "\e[1A\e[K"
+                printf "\e[1A\e[K"
             fi        
             printf "\e[31mPlease enter a valid Username\e[0m\n"
         fi
@@ -329,7 +330,7 @@ function Query_User(){
 }
 
 #View Recent Scores of game in a paginated view.
-function Recent_Score(){
+Recent_Score(){
     printf "\033c"
     if [ "$user" == "" ]; then {
         (echo "$first_line"; tail -n +2 history.txt |sort -r ) | output_table
@@ -346,7 +347,7 @@ function Recent_Score(){
 }
 
 #Perform Log Rotation by saving last 10 entries of history.txt
-function Log_Rotation(){
+Log_Rotation(){
     tail -n +2 history.txt| tail -10 > history.tmp
     tar -czf history.tar.gz history.txt
     (echo "$first_line"; cat history.tmp) > history.txt
@@ -356,19 +357,19 @@ function Log_Rotation(){
 }
 
 #Restore previous log files
-function Restore_Logs(){
+Restore_Logs(){
     [ ! -f "history.tar.gz" ] && printf "\033c" && printf "\e[31mNo Stored Logs Found\e[0m\n"
     [ -f "history.tar.gz" ] && tar -xzf "history.tar.gz" && printf "\033c" && printf "\e[32mRestored Logs\e[0m\n"     
 }
 
 #View the logs sorted based on specific filters(time stamp as default.)
-function Sorted_View(){
+Sorted_View(){
     printf "\033c"
-
+    local attempt=0
     while true; do 
         options=("1] User" "2] Time survived" "3] Score" "4] Time Stamp{default}")
         tabular_display
-        read -e -n 1 -p $'\e[33mSelect a specific feature to filter : \e[0m' key
+        read -er -n 1 -p $'\001\e[33m\002Select a specific feature to filter : \001\e[0m\002' key
         printf "\n"
         if valid_command_default "$key"; then
             key=4
@@ -378,31 +379,48 @@ function Sorted_View(){
         elif valid_command 4 $key; then
             break
         else 
-            printf "\033c" 
-            printf "\e[31mPlease enter a valid Command\e[0m\n"
+            if [[ "$attempt" -eq 0 ]];then
+                printf "\e[1A\e[K"
+            else 
+                printf "\e[1A\e[K"
+                printf "\e[1A\e[K"
+            fi 
+            printf "\033c"
+            printf "\e[31mEnter a Valid Command\e[0m\n"
         fi
+        attempt=1
     done
 
     if [[ "$key" == '1' ]];then 
+        local attempt=0
         while true;do
-        read -e -p $'\e[33mSort in ascending order\e[37m {default} \e[33m(1) or Sort in descending order (2) : \e[0m' command
-        echo "$command"
-        if valid_command_default "$command";then
-            command=1
-            break
-        elif valid_command_quit "$command"; then
-            return 1
-        elif valid_command 2 $command; then
-            break
-        else
-            printf "\033c" 
-            printf "\e[31mPlease enter a valid Command\e[0m\n"
-        fi        
+            read -ern 1 -p $'\001\e[33m\002Sort by\nAscending order\001\e[37m\002 {default} \001\e[33m\002(1)\nDescending order (2) : \001\e[0m\002' command
+            if valid_command_default "$command";then
+                command=1
+                break
+            elif valid_command_quit "$command"; then
+                return 1
+            elif valid_command 2 "$command"; then
+                break
+            else
+                if [[ "$attempt" -eq 0 ]];then
+                    printf "\e[1A\e[K"
+                    printf "\e[1A\e[K"
+                    printf "\e[1A\e[K"
+                else 
+                    printf "\e[1A\e[K"
+                    printf "\e[1A\e[K"
+                    printf "\e[1A\e[K"
+                    printf "\e[1A\e[K"
+                fi        
+                printf "\e[31mEnter a Valid Command\e[0m\n"
+            fi        
+            attempt=1
         done
         if [[ "$command" == 2 ]];then {
             #outputs the top line of history.txt and then sort and then send both to output table
             { echo "$first_line";tail -n +2 history.txt | sort -fbdr -t "," -k2,2 -k3,3nr -k5,5 ;} | output_table 
-        } elif [[ "$command" == 'q' || "$command" == $'\x1b' ]];then {
+        } elif [[ "$command" == 'q' ]];then {
             printf "\033c"
             return
         } else {
@@ -420,7 +438,7 @@ function Sorted_View(){
     printf "\033c"
 }  
 
-function calculate_records(){
+calculate_records(){
     awk -F "," '
         BEGIN {
             death["SELF"]=0
@@ -458,7 +476,7 @@ timestamp_range(){
     printf "Enter the  timestamp in the format ( YYYY-MM-DD HH:MM:SS )\n\e[0m"
     local attempt=0
     while true ;do
-        read -e -p $'\e[33mStart Time : \e[0m' start_time
+        read -er -p $'\001\e[33m\002Start Time : \001\e[0m\002' start_time
         if valid_command_default "$start_time"; then
             start_time="$first_game_time"
             break
@@ -468,7 +486,8 @@ timestamp_range(){
             if [[ "$attempt" -eq 0 ]];then
                 printf "\e[1A\e[K"
             else 
-                printf "\e[2A\e[K"
+                printf "\e[1A\e[K"
+                printf "\e[1A\e[K"
             fi
             printf "\e[31mEnter a valid Timestamp\n\e[0m"
         else
@@ -478,7 +497,7 @@ timestamp_range(){
     done
     attempt=0
     while true ;do
-        read -e -p $'\e[33mEnd Time : \e[0m' end_time
+        read -er -p $'\001\e[33m\002End Time : \001\e[0m\002' end_time
         if valid_command_default "$end_time";then
             end_time="$last_game_time"
             break
@@ -488,7 +507,8 @@ timestamp_range(){
             if [[ "$attempt" -eq 0 ]];then
                 printf "\e[1A\e[K"
             else 
-                printf "\e[2A\e[K"
+                printf "\e[1A\e[K"
+                printf "\e[1A\e[K"
             fi
             printf "\e[31mEnter a valid Timestamp\n\e[0m"
         else
@@ -504,18 +524,19 @@ timestamp_range(){
 }
 
 #Analyse the data of players of all games
-function Analytics(){
+Analytics(){
     printf "\033c"
     local attempt=0    
     while true; do
-        read -erp $'\e[33mDo you want to view filter analysis based on timestamp or view for entire file? (1/2) \e[0m' input
+        read -ern 1 -p $'\001\e[33m\002Do you want to view filter analysis based on timestamp or view for entire file? (1/2) \001\e[0m\002' input
         if valid_command_quit "$input";then
             return 1
         elif ! valid_command 2 "$input";then
             if [[ "$attempt" -eq 0 ]];then
                 printf "\e[1A\e[K"
             else 
-                printf "\e[2A\e[K"
+                printf "\e[1A\e[K"
+                printf "\e[1A\e[K"
             fi
             printf "\e[31mEnter a valid Command\n\e[0m"
         else
@@ -576,7 +597,7 @@ remove_entries_user(){
 delete_user(){
     local attempt=0
     while true; do
-        read -e -p $'\e[33mSpecify a User : \e[0m' player
+        read -er -p $'\001\e[33m\002Specify a User : \001\e[0m\002' player
         if valid_command_quit "$player"; then
             return 1
         elif [[ "$player" != "" ]] && valid_user "$player" ; then
@@ -585,7 +606,8 @@ delete_user(){
             if [[ "$attempt" -eq 0 ]];then
                 printf "\e[1A\e[K"
             else 
-                printf "\e[2A\e[K"
+                printf "\e[1A\e[K"
+                printf "\e[1A\e[K"
             fi            
             printf "\e[31mEnter a valid username\n\e[0m"
         fi
@@ -594,7 +616,7 @@ delete_user(){
 
     attempt=0
     while true; do
-        read -e -p $'\e[31mAre you sure you want to delete these entries ? (y/n) - \e[0m' confirmation
+        read -ern 1 -p $'\001\e[31m\002Are you sure you want to delete these entries ? (y/n) - \001\e[0m\002' confirmation
         if valid_command_quit "$confirmation"; then
             return 1
         elif [[ $confirmation == "y" ]]; then
@@ -607,7 +629,8 @@ delete_user(){
             if [[ "$attempt" -eq 0 ]];then
                 printf "\e[1A\e[K"
             else 
-                printf "\e[2A\e[K"
+                printf "\e[1A\e[K"
+                printf "\e[1A\e[K"
             fi            
             printf "\e[31mEnter a valid command\n\e[0m"
         fi
@@ -638,7 +661,7 @@ delete_timestamps(){
     fi
     attempt=0
     while true; do
-        read -e -p $'\e[31mAre you sure you want to delete the records? (y/n) \e[0m' confirmation
+        read -ern 1 -p $'\001\e[31m\002Are you sure you want to delete the records? (y/n) \001\e[0m\002' confirmation
         if valid_command_quit "$confirmation";then
             return 1
         elif [[ "$confirmation" == "n" ]]; then
@@ -651,7 +674,8 @@ delete_timestamps(){
             if [[ "$attempt" -eq 0 ]];then
                 printf "\e[1A\e[K"
             else 
-                printf "\e[2A\e[K"
+                printf "\e[1A\e[K"
+                printf "\e[1A\e[K"
             fi
             printf "\e[31mPlease Enter a Valid Command\n\e[0m"
         fi    
@@ -681,14 +705,14 @@ delete_misformatted_records(){
     update_stats
 }
 #Delete Entries from history.txt
-function Delete_Entries(){
+Delete_Entries(){
     printf "\033c"
 
     local delete_methods=("delete_user" "delete_timestamps" "delete_misformatted_records")
     while true; do
         options=("1] Specific User" "2] Timestamp" "3] Misformatted Records")
         tabular_display
-        read -e -p $'\e[33mChoose a method to delete : \e[0m' method
+        read -ern 1 -p $'\001\e[33m\002Choose a method to delete : \001\e[0m\002' method
         if valid_command_quit "$method"; then
             return 1
         elif valid_command 3 $method; then
