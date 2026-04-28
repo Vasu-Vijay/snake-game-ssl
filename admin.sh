@@ -438,6 +438,7 @@ Sorted_View(){
     printf "\033c"
 }  
 
+export -f output_table
 calculate_records(){
     awk -F "," '
         BEGIN {
@@ -450,22 +451,54 @@ calculate_records(){
             death[$4]+=1
             if($3>=max_score){
                 max_score=$3
-                max_score_detail[$2]=$0
+                for(j=1;j<6;j++){
+                    max_score_detail[$2,j]=$j
+                }
+                entries[NR]=$2
+                count++
             }
         }
         END {
-            printf "average_score : " score/NR "\naverage_time : " time/NR "\nmax_score : " max_score "\n\n"
-            printf"CAUSE_OF_DEATH :        "
-            for(i in death){
-                printf  i ":" death[i] "    " 
+            if(death["SELF"] == 1){
+                fraction=1
+            } else {
+                fraction=death["WALL"]/(death["WALL"] + death["SELF"])
             }
-            printf "\nFraction of Wall Deaths : "
-            if(death["SELF"]==0){printf 1}
-            else {printf death["WALL"]/(death["WALL"] + death["SELF"])}
-            printf "\n\nList of Entries with Max Score\n\n"
-            for(i in max_score_detail){
-                print max_score_detail[i]
+
+            printf "\n╔══════════════════════════════╗\n"
+            printf "║        STATISTICS            ║\n"
+            printf "╠═══════════════╦══════════════╣\n"
+            printf "║ Average Score ║ %-12s ║\n", score/NR
+            printf "╠═══════════════╬══════════════╣\n"
+            printf "║ Average Time  ║ %-12s ║\n", time/NR
+            printf "╠═══════════════╬══════════════╣\n"
+            printf "║ Max Score     ║ %-12s ║\n", max_score
+            printf "╚═══════════════╩══════════════╝\n\n"
+            
+            printf "╔════════════════════╦═══════════╦═══════════╗\n"
+            printf "║%-20s║ %-10s║ %-10s║\n", "CAUSE_OF_DEATH", "SELF", "WALL"
+            printf "╠════════════════════╬═══════════╬═══════════╣\n"
+            printf "║%-20s║ %-10s║ %-10s║\n", "COUNTS", death["SELF"], death["WALL"]
+            printf "╠════════════════════╩═══════════╬═══════════╣\n"
+            printf "║%-32s║ %-10s║\n","FRACTION_OF_WALL_DEATHS",fraction
+            printf "╚════════════════════════════════╩═══════════╝\n\n"
+
+            printf "╔═══════════════════════════════════════════════════════════════════════════╗\n"
+            printf "║\t\t\tLIST OF ENTRIES WITH MAX SCORE\t\t\t    ║\n"
+            printf "╠═════════════════════╦═══════════════════╦══════╦══════╦═══════════════════╣\n"
+            printf "║%-21s║ %-18s║ %-5s║ %-5s║ %-18s║\n","START_TIME","USERNAME","SCORE","DEATH","TIME_ALIVE"
+            printf "╠═════════════════════╬═══════════════════╬══════╬══════╬═══════════════════╣\n"
+            for(j in entries){
+                printf "║%-21s║ %-18s║ %-5s║ %-5s║ %-18s║\n",max_score_detail[entries[j],1],max_score_detail[entries[j],2],max_score_detail[entries[j],3],max_score_detail[entries[j],4],max_score_detail[entries[j],5]
+                for(k=1;k<6;k++){
+                    max_score_detail[entries[j],k]
+                }
+                if(count != 1){
+                    printf "╠═════════════════════╬═══════════════════╬══════╬══════╬═══════════════════╣\n"
+                    count--
+                }
             }
+            printf "╚═════════════════════╩═══════════════════╩══════╩══════╩═══════════════════╝\n"
         }
         ' | less
     printf "\033c"
