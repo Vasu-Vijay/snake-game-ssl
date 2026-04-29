@@ -1,0 +1,352 @@
+/******************* Custom Font-face ***********************/
+@font-face {
+    font-family: "Squada One";
+    src: url(../fonts/Squada_One/SquadaOne-Regular.ttf);
+}
+
+/******************* Animations ***********************/
+@keyframes pulseText {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+body {
+    font-size: 20px;
+    /* background: #c1ff72; */
+    background-color: rgba(17, 215, 241, 0.971);
+    /* background-color: #df7eff; */
+    font-family: "Squada One";
+    background-image: url(../media/ui/background_dot.png);
+    background-size: 20px 20px;
+}
+
+/******************* Nav Bar ***********************/
+.navbar {
+    border-bottom: 5px solid black;
+    font-size: 1.2rem;
+}
+
+.navbar-brand {
+    padding: 0;
+}
+
+#brand-icon {
+    height: 30px;
+    width: 30px;
+    rotate: -10deg;
+    box-shadow: 2px 2px black;
+}
+
+#brand-title {
+    color: red;
+    font-weight: 400;
+    font-size: 1.5rem;
+}
+
+#highscore-navbar {
+    border: 3px solid black;
+    box-shadow: 3px 3px black;
+    padding-left: 7px;
+    padding-right: 7px;
+    background-color: rgb(0, 174, 255);
+    font-size: 1rem;
+}
+
+/* clear inbuilt padding of cols in bootstrap flex rows */
+[class^="col"] {
+    padding-left: 0;
+    padding-right: 0
+}
+
+#main-row {
+    margin-top: 4vh;
+    margin-left: 1vw;
+}
+
+#right-panel {
+    margin-left: 3vw;
+    margin-right: 3vw;
+}
+
+/******************* Game Window ***********************/
+#game-window {
+    background-color: rgba(17, 215, 241, 0.971);
+    border: 4px solid black;
+    box-shadow: 5px 5px black;
+    height: 70vh;
+}
+
+#game-top-strip {
+    background: black;
+    padding-left: 10px;
+    padding-right: 10px;
+    color: white;
+    font-weight: 100;
+}
+
+#highscore-msg-instrip {
+    text-shadow: 2px 2px rgb(116, 116, 116);
+    animation: pulseText 1.5s infinite ease-in-out;
+}
+
+canvas {
+    border: 2px solid black;
+    box-shadow: 3px 3px black;
+}
+
+
+/******************* Info Cards ***********************/
+.info-card {
+    border: 3px solid black;
+    box-shadow: 4px 4px black;
+    padding-left: 1vw;
+    padding-right: 1vw;
+    padding-top: 1vh;
+    padding-bottom: 1.5vh;
+}
+
+.info-card-header {
+    font-size: 27px;
+}
+
+.card-underline {
+    width: 100%;
+    height: 0.4vh;
+    background-color: black;
+    margin-bottom: 2vh;
+}
+
+#score-card {
+    background-color: #ffb2ef;
+    rotate: -1deg;
+}
+
+#score-label {
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+#card-score-displayer {
+    font-size: 3rem;
+    line-height: 1;
+    color: red;
+}
+
+.small-card {
+    background-color: white;
+    border: 2px solid black;
+    margin-top: 1.5vh;
+    padding-left: 0.4vw;
+    padding-top: 0.8vh;
+    padding-bottom: 0.8vh;
+}
+
+.small-card-header {
+    font-size: 13px;
+}
+
+.small-card-value {
+    font-size: 20px;
+    line-height: 1;
+    color: hotpink;
+}
+
+#time-card {
+    background-color: #a388ee;
+}
+
+#active-effects-card {
+    background-color: #8ff769;
+    rotate: 1deg;
+}
+
+.progress-bar-wrapper {
+    background-color: white;
+    border: 2px solid black;
+    padding-left: 0.7vw;
+    padding-right: 0.7vw;
+    padding-top: 1vh;
+    padding-bottom: 1.5vh;
+}
+
+.bar-icon {
+    border: 3px solid black;
+    rotate: -2deg;
+    height: 4vh;
+    aspect-ratio: 1 / 1;
+}
+
+.bar-header {
+    color: darkgreen;
+}
+
+.bar {
+    border: 3px solid black;
+    background-color: white;
+    width: 100%;
+    height: 3vh;
+}
+
+.bar-filled {
+    width: 0%;
+    height: 100%;
+    transition: width 0.5s linear;
+}
+
+.immunity .bar-filled {
+    background-color: #8ff769a0;
+}
+
+.speed .bar-filled {
+    background-color: #ffff4ebb;
+}
+
+/******************* Controls Strip ***********************/
+#controls-strip {
+    rotate: 0.9deg;
+    background-color: rgb(255, 225, 0);
+    border: 3px solid black;
+    box-shadow: 3px 3px black;
+    padding-left: 1.5vw;
+    padding-right: 1.5vw;
+    height: 9vh;
+}
+
+.control {
+    background-color: white;
+    height: 5vh;
+    line-height: 5vh;
+    aspect-ratio: 1/1;
+    margin-left: 0.5vw;
+    margin-right: 0.5vw;
+    text-align: center;
+    border: 3px solid black;
+    box-shadow: 2px 2px black;
+    font-size: 1rem;
+}
+
+/******************* Modal styling ***********************/
+.modal {
+    backdrop-filter: blur(2px);
+}
+
+.modal-title {
+    font-size: 3rem;
+    color: rgb(0, 85, 8);
+}
+
+.modal-content {
+    box-shadow: 5px 5px 0 black;
+    border-radius: 0;
+    background: #76D7C4;
+    font-weight: light;
+}
+
+/* Used in Firefox browser */
+.modal-body {
+    scrollbar-width: thin;
+    scrollbar-color: #cf787c transparent;
+}
+
+/* For other browser like chrome,safari,edge,etc.. */
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cf787c;
+    border-radius: 10px;
+}
+
+/******************* Modal Buttons ***********************/
+.btn {
+    border: 2px solid black;
+    border-radius: 0;
+    transition: none;
+    background-color: #0d6efd;
+}
+
+.btn:hover,
+.btn:focus,
+.btn:active:focus {
+    box-shadow: 3px 3px black;
+    border: 2px solid black;
+    background-color: #0d6efd;
+}
+
+/******************* Form inputs ***********************/
+.start-input {
+    border: 2px solid black;
+}
+
+.start-input:focus {
+    border: 3px solid black;
+    box-shadow: 4px 4px black;
+}
+
+/******************* Stats modal table ***********************/
+.table td {
+    border: none;
+    font-size: 20px;
+    color: #0505f5;
+    background-color: #76D7C4;
+}
+
+.table-container {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.table-container td,
+th {
+    border: none;
+    text-align: center;
+}
+
+.table-container th {
+    text-align: center;
+    color: #e87523;
+    background-color: #76D7C4;
+    font-size: 1.3rem;
+}
+
+/******************* Miscellaneous ***********************/
+.icon {
+    margin-right: 4px;
+    height: 1em;
+    width: 1em;
+}
+
+#usernameError {
+    color: #ff0000;
+}
+
+#rulesModal li {
+    color: #0505f5;
+}
+
+#game-over {
+    animation: pulseText 1.5s infinite ease-in-out;
+    font-size: 3rem;
+    color: #ff0000 !important;
+}
+
+#new-high-score {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffbf00;
+}
+
+#death-cause {
+    font-size: 24px;
+    color: #e0f000;
+}
+
+.hidden {
+    display: none;
+}
