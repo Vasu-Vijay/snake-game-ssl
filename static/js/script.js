@@ -383,6 +383,14 @@ function updateUIafterDeath(myState, cause) {
     let endModal = new bootstrap.Modal(document.getElementById("endModal"));
     endModal.show();
 
+    fillStatsModal(myState, cause);
+}
+
+function fillStatsModal(myState, cause) {
+    let statsTable = document.getElementById("game-stats-table");
+    let dataRow = document.createElement("tr");
+    dataRow.innerHTML = `<td>${myState.score}</td><td>${(myState.snake.timeAlive/1000).toFixed(3)}s</td><td>${cause}</td>`
+    statsTable.appendChild(dataRow);
 }
 
 function updateState(myState) {
@@ -755,3 +763,9 @@ document.getElementById("startbtn").addEventListener("click", start);
 // });
 
 startModal.show();
+document.getElementById("startModal").addEventListener("shown.bs.modal", () => {
+    document.getElementById("startbtn").focus();
+})
+document.getElementById("endModal").addEventListener("shown.bs.modal", () => {
+    document.getElementById("retry-btn").focus();
+})

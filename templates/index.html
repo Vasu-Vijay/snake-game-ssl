@@ -134,8 +134,8 @@
                         <h4 class="w-100 text-center" id="usernameDisplay">user</h4>
                     </div>
                     <div class="mb-3 start">
-                        <label class="form-label rounded-0">Enter Username</label> <!--TO DO : Validation-->
-                        <input type="text" id="username" class="form-control rounded-0" placeholder="Your name" value="guest_user">
+                        <label for="username" class="form-label rounded-0">Enter Username</label> <!--TO DO : Validation-->
+                        <input type="text" id="username" class="form-control rounded-0 start-input" placeholder="Your name" value="guest_user" onfocus="this.select()" autocomplete="username given-name">
                         <p id="usernameError" class="hidden"></p>
                     </div>
 
@@ -149,8 +149,8 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label rounded-0">Select Mode</label>
-                        <select id="mode" class="form-select rounded-0">
+                        <label for="mode" class="form-label rounded-0">Select Mode</label>
+                        <select id="mode" class="form-select rounded-0 start-input">
                             <option value="classic">Classic</option>
                             <option value="cyberpunk">Cyberpunk</option>
                         </select>
@@ -230,7 +230,7 @@
                 <div class="d-flex justify-content-between">
                     <!--Opens Start Modal but changes a few elements resembling retry modal-->
                     <button class="btn btn-primary" data-bs-target="#statsModal" data-bs-dismiss="modal" data-bs-toggle="modal">Show Stats</button>
-                    <button class="btn btn-primary" data-bs-target="#startModal" data-bs-dismiss="modal"
+                    <button id="retry-btn" class="btn btn-primary" data-bs-target="#startModal" data-bs-dismiss="modal"
                         data-bs-toggle="modal">Retry</button>
                 </div>
             </div>
@@ -247,7 +247,7 @@
                 <div class="modal-body">
                     <h4 class="w-100 text-center">High Score :<span class="high-score-value ms-3">2</span></h4>
                     <div class="table-container">
-                    <table class="table" id="game-stats">
+                    <table class="table" id="game-stats-table">
                         <thead class="sticky-top">
                             <tr>
                                 <th>Score</th>

@@ -217,6 +217,14 @@ canvas {
     font-size: 1rem;
 }
 
+.modal {
+    backdrop-filter: blur(2px);
+}
+
+
+
+
+
 #highScoreDisplayer {
     font-size: 32px;
     color:#ffbf00;
@@ -293,14 +301,25 @@ label.form-label {
 }
 
 .btn {
+    border: 2px solid black;
     border-radius: 0;
-    box-shadow: 5px 5px 0 black;
-    transition: transform 0.15s , box-shadow 0.15s linear;
+    transition: none;
+    background-color: #0d6efd;
 }
 
-.btn:hover{
-    transform: translate(5px, 5px);
-    box-shadow: 0 0 0 black;
+.btn:hover, .btn:focus, .btn:active:focus {
+    box-shadow: 3px 3px black;
+    border: 2px solid black;
+    background-color: #0d6efd;
+}
+
+.start-input {
+    border: 2px solid black;
+}
+
+.start-input:focus {
+    border: 3px solid black;
+    box-shadow: 4px 4px black;
 }
 
 .table td {
@@ -323,8 +342,8 @@ label.form-label {
 }
 
 .modal-title {
-    font-size: 31px;
-    color:rgb(255, 2, 213);
+    font-size: 3rem;
+    color:rgb(0, 85, 8);
 }
 
 .modal-content {
