@@ -346,9 +346,7 @@ Recent_Score(){
     } fi
 }
 
-#Perform Log Rotation by saving last 10 entries of history.txt
-Log_Rotation(){
-    printf "\e[31mAre you sure you want to Backup Logs and update your history.txt?\n\e[0m"
+backup_logs(){
     grep -vE "^$" history.txt | tail -n +2 | tail -10 > history.tmp
     mkdir -p backup
     tar -czf ./backup/history.tar.gz history.txt
@@ -358,6 +356,59 @@ Log_Rotation(){
     printf "\033c"
     printf "\e[32mLogs have been backed up\e[0m\n"
     printf "\e[32mHistory.txt has been updated\e[0m\n"
+}
+
+#Perform Log Rotation by saving last 10 entries of history.txt
+Log_Rotation(){
+    local attempt=0
+    while true; do
+        read -er -n 1 -p $'\e[31mAre you sure you want to Backup Logs and update your history.txt? (y/n) \e[0m' confirmation
+            if valid_command_quit "$confirmation";then
+                return 1
+            elif [[ "$confirmation" == "n" ]]; then
+                printf "\033c"
+                return 1
+            elif [[ "$confirmation" == "y" ]]; then
+                if [[ -f ./backup/history.tar.gz ]];then
+                    local attemp=0
+                    while true;do
+                        read -ern 1 -p $'\e[33mA backup file already exist.\nDo you want to overwrite it? (y/n) \e[0m' input
+                        if valid_command_quit "$input"; then
+                            return 1
+                        elif [[ "$input" == "n" ]];then
+                            printf "\033c"
+                            return 1
+                        elif [[ "$input" == "y" ]];then
+                            backup_logs
+                            return 0
+                        else
+                            if [[ "$attemp" -eq 0 ]];then
+                                printf "\e[1A\e[2K"
+                                printf "\e[1A\e[2K"
+                            else 
+                                printf "\e[1A\e[2K"
+                                printf "\e[1A\e[2K"
+                                printf "\e[1A\e[2K"
+                            fi 
+                            printf "\e[31mEnter a Valid Command\e[0m\n"
+                        fi                      
+                        attemp=1
+                    done
+                else
+                    backup_logs
+                    break
+                fi
+            else
+                if [[ "$attempt" -eq 0 ]];then
+                    printf "\e[1A\e[2K"
+                else 
+                    printf "\e[1A\e[2K"
+                    printf "\e[1A\e[2K"
+                fi 
+                printf "\e[31mEnter a Valid Command\e[0m\n"
+            fi
+        attempt=1
+    done
 }
 
 #Restore previous log files
