@@ -54,16 +54,19 @@
                             </div>
                         </div>
 
-                        <div id="time-card" class="info-card d-flex flex-row justify-content-between align-items-center">
+                        <div id="time-card"
+                            class="info-card d-flex flex-row justify-content-between align-items-center">
                             <div class="info-card-header">Time: <span class="time-value">0.000s</span></div>
-                            <img id="time-icon" style="height: 10vh; aspect-ratio: 1 / 1;" src="../static/media/ui/time.png">
+                            <img id="time-icon" style="height: 10vh; aspect-ratio: 1 / 1;"
+                                src="../static/media/ui/time.png">
                         </div>
 
                         <div id="active-effects-card" class="info-card d-flex flex-column">
                             <div class="info-card-header">Active Effects</div>
                             <div class="card-underline"></div>
                             <div id="progress-bars" class="d-flex flex-column gap-3">
-                                <div id="immunity-progress-bar" class="progress-bar-wrapper immunity d-flex flex-column gap-2">
+                                <div id="immunity-progress-bar"
+                                    class="progress-bar-wrapper immunity d-flex flex-column gap-2">
                                     <div class="d-flex align-items-center gap-2">
                                         <img class="bar-icon" src="../static/media/ui/immunity.png">
                                         <div class="bar-header">Immunity</div>
@@ -74,7 +77,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div id="speed-progress-bar" class="progress-bar-wrapper speed d-flex flex-column gap-2">
+                                <div id="speed-progress-bar"
+                                    class="progress-bar-wrapper speed d-flex flex-column gap-2">
                                     <div class="d-flex align-items-center gap-2">
                                         <img class="bar-icon" src="../static/media/ui/speed.png">
                                         <div class="bar-header">Speed</div>
@@ -134,15 +138,18 @@
                         <h4 class="w-100 text-center" id="usernameDisplay">user</h4>
                     </div>
                     <div class="mb-3 start">
-                        <label for="username" class="form-label rounded-0">Enter Username</label> <!--TO DO : Validation-->
-                        <input type="text" id="username" class="form-control rounded-0 start-input" placeholder="Your name" value="guest_user" onfocus="this.select()" autocomplete="username given-name">
+                        <label for="username" class="form-label rounded-0">Enter Username</label>
+                        <!--TO DO : Validation-->
+                        <input type="text" id="username" class="form-control rounded-0 start-input"
+                            placeholder="Your name" value="guest_user" onfocus="this.select()"
+                            autocomplete="username given-name">
                         <p id="usernameError" class="hidden"></p>
                     </div>
 
                     <div class="retry mb-3 hidden">
                         <table class="table">
                             <tr>
-                                <td >High Score</td>
+                                <td>High Score</td>
                                 <td class="high-score-value" id="start-high-score">0</td>
                             </tr>
                         </table>
@@ -158,8 +165,9 @@
 
                     <div class="d-flex justify-content-between">
                         <button class="btn btn-primary" data-bs-target="#rulesModal" data-bs-toggle="modal"
-                            data-bs-dismiss="modal"><img src="../static/media/ui/rules.png"class="icon">Rules</button>
-                        <button class="btn btn-primary" id="startbtn"><img src="../static/media/ui/play_button.png" class="icon">Start Game</button>
+                            data-bs-dismiss="modal"><img src="../static/media/ui/rules.png" class="icon">Rules</button>
+                        <button class="btn btn-primary" id="startbtn"><img src="../static/media/ui/play_button.png"
+                                class="icon">Start Game</button>
                     </div>
 
                 </div>
@@ -174,7 +182,8 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3 border-3 border-dark">
                 <div class="modal-header">
-                    <h5 class="modal-title w-100 text-center"><img src="../static/media/ui/rules.png"class="icon"> Game Rules</h5>
+                    <h5 class="modal-title w-100 text-center"><img src="../static/media/ui/rules.png" class="icon"> Game
+                        Rules</h5>
                 </div>
 
                 <div class="modal-body">
@@ -185,7 +194,8 @@
                         <li>Avoid colliding with yourself</li>
                         <li><img src="../static/media/sprites/fruits/carrot.png" class="icon"> score : +1</li>
                         <li><img src="../static/media/sprites/fruits/triplecarrot.png" class="icon"> score : +3</li>
-                        <li><img src="../static/media/sprites/fruits/goldenapple.png" class="icon"> grants immunity for 4 seconds</li>
+                        <li><img src="../static/media/sprites/fruits/goldenapple.png" class="icon"> grants immunity for
+                            4 seconds</li>
                         <li>When Immunity is about to expire, the snake will blink</li>
                     </ul>
                 </div>
@@ -221,7 +231,7 @@
                         </tr>
                         <tr>
                             <td>Time Survived</td>
-                            <td id="death-time-alive" class="time-value">0.000s</td> 
+                            <td id="death-time-alive" class="time-value">0.000s</td>
                         </tr>
                     </table>
 
@@ -229,7 +239,8 @@
 
                 <div class="d-flex justify-content-between">
                     <!--Opens Start Modal but changes a few elements resembling retry modal-->
-                    <button class="btn btn-primary" data-bs-target="#statsModal" data-bs-dismiss="modal" data-bs-toggle="modal">Show Stats</button>
+                    <button class="btn btn-primary" data-bs-target="#statsModal" data-bs-dismiss="modal"
+                        data-bs-toggle="modal">Show Stats</button>
                     <button id="retry-btn" class="btn btn-primary" data-bs-target="#startModal" data-bs-dismiss="modal"
                         data-bs-toggle="modal">Retry</button>
                 </div>
@@ -247,22 +258,23 @@
                 <div class="modal-body">
                     <h4 class="w-100 text-center">High Score :<span class="high-score-value ms-3">2</span></h4>
                     <div class="table-container">
-                    <table class="table" id="game-stats-table">
-                        <thead class="sticky-top">
-                            <tr>
-                                <th>Score</th>
-                                <th>Time</th>
-                                <th>Death-Cause</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                        <table class="table" id="game-stats-table">
+                            <thead class="sticky-top">
+                                <tr>
+                                    <th>Score</th>
+                                    <th>Time</th>
+                                    <th>Death-Cause</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn btn-primary" data-bs-target="#endModal" data-bs-dismiss="modal" data-bs-toggle="modal">Close</button>
+                    <button class="btn btn-primary" data-bs-target="#endModal" data-bs-dismiss="modal"
+                        data-bs-toggle="modal">Close</button>
                 </div>
             </div>
         </div>

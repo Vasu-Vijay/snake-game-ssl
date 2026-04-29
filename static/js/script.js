@@ -1,8 +1,8 @@
 const fruits = {
-    "carrot": {name:"Carrot", score:1, sprite: "../static/media/sprites/fruits/carrot.png", rel_probability: 1, onEat: ateCarrots},
-    "triplecarrot": {name:"Triple Carrot", score:3, sprite:"../static/media/sprites/fruits/triplecarrot.png", rel_probability: 10, onEat: ateCarrots}, //TODO: probability to be written
-    "goldenapple": {name:"Golden Apple", score:0, sprite:"../static/media/sprites/fruits/goldenapple.png", rel_probability: 2, onEat: ateGoldenApple}, //TODO: fix probability
-    "speedupfruit": {name: "Energy", score: 1, sprite:"../static/media/sprites/fruits/speedupfruit.png", rel_probability: 1, onEat: ateSpeedUp}
+    "carrot": { name: "Carrot", score: 1, sprite: "../static/media/sprites/fruits/carrot.png", rel_probability: 1, onEat: ateCarrots },
+    "triplecarrot": { name: "Triple Carrot", score: 3, sprite: "../static/media/sprites/fruits/triplecarrot.png", rel_probability: 10, onEat: ateCarrots }, //TODO: probability to be written
+    "goldenapple": { name: "Golden Apple", score: 0, sprite: "../static/media/sprites/fruits/goldenapple.png", rel_probability: 2, onEat: ateGoldenApple }, //TODO: fix probability
+    "speedupfruit": { name: "Energy", score: 1, sprite: "../static/media/sprites/fruits/speedupfruit.png", rel_probability: 1, onEat: ateSpeedUp } //TODO: think of score, probability
 }
 
 var graphicsMode = "classic";
@@ -20,10 +20,10 @@ const CELL_SIZE = 30;
 const CANVAS_HEIGHT = N_ROWS * CELL_SIZE;
 const CANVAS_WIDTH = N_COLUMNS * CELL_SIZE;
 
-const image_elems={} //dict containing <image_path>:<html img elem> pairs
+const image_elems = {} //dict containing <image_path>:<html img elem> pairs
 
-const turn_images=[["body_topleft.png","body_bottomleft.png"],     //-1,-1   -1,+1     {del_x, del_y values}
-                   ["body_topright.png","body_bottomright.png"]];  //+1,-1   +1,+1
+const turn_images = [["body_topleft.png", "body_bottomleft.png"],     //-1,-1   -1,+1     {del_x, del_y values}
+["body_topright.png", "body_bottomright.png"]];  //+1,-1   +1,+1
 
 const deathCauses = ["SELF", "WALL"];
 let isFirst = true;
@@ -42,7 +42,7 @@ class User {
     }
 
     addRecord(record) {
-        if(!((record.startTime) && (record.score && record.score>=2) && (record.cause && deathCauses.includes(record.cause)) && (record.timeAlive && record.timeAlive > 0))) {
+        if (!((record.startTime) && (record.score && record.score >= 2) && (record.cause && deathCauses.includes(record.cause)) && (record.timeAlive && record.timeAlive > 0))) {
             console.error("Invalid record pushed!", record);
             return null;
         }
@@ -63,15 +63,15 @@ class User {
         fetch("/save_score", { //DOUBT: whats fetch functon tho??/?
             "method": "POST",
             "body": data,
-        }).then(function (response){
-            if(!response.ok) {
+        }).then(function (response) {
+            if (!response.ok) {
                 console.error("HTTP error: ", response);
                 return null;
             }
             return response.text();
-        }).then(function (data){
-            if(data) {
-                if(data=="ok") {
+        }).then(function (data) {
+            if (data) {
+                if (data == "ok") {
                     console.log("Saved successfully!");
                 } else {
                     console.error(data);
@@ -140,7 +140,7 @@ class GameState {
     }
 
     gtoc(x, y) { // convert grid's x,y coords to absolute x,y coords of the canvas, to keep board in center
-        return [(this.canvas.width-(this.nColumns)*this.cellSize)/2+x*this.cellSize, (this.canvas.height-(this.nRows)*this.cellSize)/2+y*this.cellSize];
+        return [(this.canvas.width - (this.nColumns) * this.cellSize) / 2 + x * this.cellSize, (this.canvas.height - (this.nRows) * this.cellSize) / 2 + y * this.cellSize];
     }
 
     destroy() {
@@ -152,14 +152,14 @@ class GameState {
 class Snake {
     constructor(myState) {
         this.body = [
-            {x: 2, y: 1, sprite: "head_right.png"},
-            {x: 1, y: 1, sprite: "tail_left.png"}
+            { x: 2, y: 1, sprite: "head_right.png" },
+            { x: 1, y: 1, sprite: "tail_left.png" }
         ];
 
         this.growthBuffer = 0; //score left to be added, since there's stalling in score +3 fruits
-        
-        this.dir = {x: 1, y: 0};
-        this.prevdir = {x: 1, y: 0};
+
+        this.dir = { x: 1, y: 0 };
+        this.prevdir = { x: 1, y: 0 };
 
         this.immunityTicks = 0;
         this.timeAlive = 0;
@@ -182,11 +182,11 @@ class Snake {
     get tail() {
         return this.body[this.length - 1];
     }
-    
+
     nextPos(myState) {
         let next_x = this.head.x + this.dir.x;
         let next_y = this.head.y + this.dir.y;
-        if(this.isImmune) {
+        if (this.isImmune) {
             next_x = next_x < 0 ? (next_x % myState.nColumns + myState.nColumns) : (next_x % myState.nColumns);
             next_y = next_y < 0 ? (next_y % myState.nRows + myState.nRows) : (next_y % myState.nRows);
         }
@@ -216,18 +216,18 @@ function loadImages(images) {
 }
 
 function drawBoard(myState) {
-    for(let i=0; i<myState.nColumns; i++) {
-        for(let j=0; j<myState.nRows; j++) {
+    for (let i = 0; i < myState.nColumns; i++) {
+        for (let j = 0; j < myState.nRows; j++) {
             drawBackground(myState, i, j);
         }
     }
 }
 
 function drawBackground(myState, x, y) {
-    if( (x+y) % 2 == 0) {
-        var color="#00c60d";
+    if ((x + y) % 2 == 0) {
+        var color = "#00c60d";
     } else {
-        var color="#02940c";
+        var color = "#02940c";
     }
     let [canvas_x, canvas_y] = myState.gtoc(x, y);
     myState.ctx.fillStyle = color;
@@ -237,9 +237,9 @@ function drawBackground(myState, x, y) {
 function drawSnake(myState) { // to draw the snake, with corresponding sprites, and also update the grid
     let snake = myState.snake;
 
-    for(let i in snake.body) { // painting order to decide who comes on top if overlap
+    for (let i in snake.body) { // painting order to decide who comes on top if overlap
         let s = snake.body[snake.length - i - 1];
-        if(!s) {
+        if (!s) {
             console.error("Invalid snake element");
             return;
         }
@@ -254,8 +254,8 @@ function spawnFruit(myState) { //decides a random fruit and a random empty coord
     let cumWeights = {};
     let totalWeight = 0;
     let id = "carrot";
-    for(id of myState.fruitsUsed) {
-        if(!fruits[id]) {
+    for (id of myState.fruitsUsed) {
+        if (!fruits[id]) {
             console.error("Invalid fruit id!");
             continue;
         }
@@ -263,19 +263,19 @@ function spawnFruit(myState) { //decides a random fruit and a random empty coord
         cumWeights[id] = totalWeight;
     }
     const random = Math.random() * totalWeight;
-    for(id of myState.fruitsUsed) {
-        if(random <= cumWeights[id]) {
+    for (id of myState.fruitsUsed) {
+        if (random <= cumWeights[id]) {
             break;
         }
     }
 
     let [next_x, next_y] = myState.snake.nextPos(myState)
     let pos_x = Math.floor(Math.random() * myState.nColumns), pos_y = Math.floor(Math.random() * myState.nRows);
-    while(pos_x == myState.nColumns || pos_y == myState.nRows || myState.grid[pos_x][pos_y].length != 0 || (pos_x == next_x && pos_y == next_y)) {
+    while (pos_x == myState.nColumns || pos_y == myState.nRows || myState.grid[pos_x][pos_y].length != 0 || (pos_x == next_x && pos_y == next_y)) {
         pos_x = Math.floor(Math.random() * myState.nColumns), pos_y = Math.floor(Math.random() * myState.nRows);
     }
 
-    myState.food.push( {id: id, x: pos_x, y: pos_y} );
+    myState.food.push({ id: id, x: pos_x, y: pos_y });
     myState.grid[pos_x][pos_y].push(new Cell("fruit", fruits[id]));
 }
 
@@ -288,19 +288,19 @@ function drawFruit(myState, id, pos_x, pos_y, magnification = 1) { //draws a fru
     let fruit = fruits[id];
     let image_path = fruit.sprite;
     let [canvas_x, canvas_y] = myState.gtoc(pos_x, pos_y);
-    let imageX = canvas_x + myState.cellSize/2 - myState.cellSize/2 * magnification;
-    let imageY = canvas_y + myState.cellSize/2 - myState.cellSize/2 * magnification;
+    let imageX = canvas_x + myState.cellSize / 2 - myState.cellSize / 2 * magnification;
+    let imageY = canvas_y + myState.cellSize / 2 - myState.cellSize / 2 * magnification;
     myState.ctx.drawImage(image_elems[image_path], imageX, imageY, myState.cellSize * magnification, myState.cellSize * magnification);
 }
 
 function getDirString(dirX, dirY) { // give the dir name for the dir vector
-    if(dirX==0 && dirY==1) {
+    if (dirX == 0 && dirY == 1) {
         return "down";
-    } else if(dirX==0 && dirY==-1) {
+    } else if (dirX == 0 && dirY == -1) {
         return "up";
-    } else if(dirX==1 && dirY==0) {
+    } else if (dirX == 1 && dirY == 0) {
         return "right";
-    } else if(dirX==-1 && dirY==0) {
+    } else if (dirX == -1 && dirY == 0) {
         return "left";
     } else {
         console.error("Invalid dirX, dirY!", dirX, dirY);
@@ -308,12 +308,12 @@ function getDirString(dirX, dirY) { // give the dir name for the dir vector
     }
 }
 
-function updateDir(myState){ //changes dir variable according to the last key pressed
+function updateDir(myState) { //changes dir variable according to the last key pressed
     myState.snake.prevdir.x = myState.snake.dir.x;
     myState.snake.prevdir.y = myState.snake.dir.y;
-    
-    if (!myState.inputBuffer[0] || (checkOpposite(myState.snake.dir, myState.inputBuffer[0]))) { 
-        return; 
+
+    if (!myState.inputBuffer[0] || (checkOpposite(myState.snake.dir, myState.inputBuffer[0]))) {
+        return;
     }
 
     myState.snake.dir.x = myState.inputBuffer[0].x;
@@ -326,8 +326,8 @@ function updateCanvas(myState) {
     drawBoard(myState);
     myState.frameNum += 1;
 
-    if(myState.snake.isImmune) {
-        if(myState.snake.immunityTicks < 5) {
+    if (myState.snake.isImmune) {
+        if (myState.snake.immunityTicks < 5) {
             myState.snake.color == "main" ? myState.snake.color = "immune" : myState.snake.color = "main";
         }
     } else {
@@ -344,13 +344,13 @@ function updateCanvas(myState) {
 function getDeathCause(myState) { // check death according to current pos and dir
     let causeOfDeath = undefined;
     let [next_x, next_y] = myState.snake.nextPos(myState);
-    if(next_x >=myState.nColumns || next_x <0 || next_y>=myState.nRows || next_y<0) { 
-        causeOfDeath = "WALL"; 
+    if (next_x >= myState.nColumns || next_x < 0 || next_y >= myState.nRows || next_y < 0) {
+        causeOfDeath = "WALL";
     } else {
         let cells = myState.grid[next_x][next_y];
 
-        if(cells.length!=0 && (cells[cells.length-1].type == "snake_body" || (!myState.snake.tailChanged && cells[0].type == "snake_tail"))) { 
-            causeOfDeath = "SELF"; 
+        if (cells.length != 0 && (cells[cells.length - 1].type == "snake_body" || (!myState.snake.tailChanged && cells[0].type == "snake_tail"))) {
+            causeOfDeath = "SELF";
         }
     }
     return causeOfDeath;
@@ -364,10 +364,10 @@ function executeFuneral(myState, cause) { // perform actions reqd after game end
     myState.snake.timeAlive = myState.deathTime - myState.startTime;
 
     let pad = (n) => String(n).padStart(2, '0');
-    let formattedStartTime = `[${st.getFullYear()}-${pad(st.getMonth()+1)}-${pad(st.getDate())} ${pad(st.getHours())}:${pad(st.getMinutes())}:${pad(st.getSeconds())}]`;
+    let formattedStartTime = `[${st.getFullYear()}-${pad(st.getMonth() + 1)}-${pad(st.getDate())} ${pad(st.getHours())}:${pad(st.getMinutes())}:${pad(st.getSeconds())}]`;
 
-    let successfullyAdded = user.addRecord({"startTime": formattedStartTime, "score": myState.score, "cause": cause, "timeAlive": (myState.snake.timeAlive/1000).toFixed(3)});
-    if(successfullyAdded) {
+    let successfullyAdded = user.addRecord({ "startTime": formattedStartTime, "score": myState.score, "cause": cause, "timeAlive": (myState.snake.timeAlive / 1000).toFixed(3) });
+    if (successfullyAdded) {
         user.saveLatestRecord();
     }
 
@@ -389,7 +389,7 @@ function updateUIafterDeath(myState, cause) {
 function fillStatsModal(myState, cause) {
     let statsTable = document.getElementById("game-stats-table");
     let dataRow = document.createElement("tr");
-    dataRow.innerHTML = `<td>${myState.score}</td><td>${(myState.snake.timeAlive/1000).toFixed(3)}s</td><td>${cause}</td>`
+    dataRow.innerHTML = `<td>${myState.score}</td><td>${(myState.snake.timeAlive / 1000).toFixed(3)}s</td><td>${cause}</td>`
     statsTable.appendChild(dataRow);
 }
 
@@ -397,9 +397,9 @@ function updateState(myState) {
     updateDir(myState);
 
     myState.snake.speedTicks = Math.max(0, myState.snake.speedTicks - 1);
-    if(myState.snake.speedTicks == 0) { myState.tickRate = TICK_RATE; }
+    if (myState.snake.speedTicks == 0) { myState.tickRate = TICK_RATE; }
 
-    if(myState.snake.isImmune) {
+    if (myState.snake.isImmune) {
         myState.snake.immunityTicks -= 1;
     }
 
@@ -408,7 +408,7 @@ function updateState(myState) {
     let [next_x, next_y] = myState.snake.nextPos(myState);
     myState.snake.growthBuffer += consumeFruitAt(myState, next_x, next_y);
 
-    if(!beatenHighScore && myState.score > user.highScore(myState)) {
+    if (!beatenHighScore && myState.score > user.highScore(myState)) {
         document.getElementById("highscore-msg-instrip").classList.remove("hidden");
         setTimeout(() => {
             document.getElementById("highscore-msg-instrip").classList.add("hidden");
@@ -417,9 +417,9 @@ function updateState(myState) {
 
     myState.snake.tailChanged = myState.snake.growthBuffer <= 0;
 
-    if(!myState.snake.isImmune) {
+    if (!myState.snake.isImmune) {
         let cause = getDeathCause(myState);
-        if(cause) {
+        if (cause) {
             executeFuneral(myState, cause);
             //TODO: add relevant death animations!!!
             return;
@@ -429,13 +429,13 @@ function updateState(myState) {
     if (myState.snake.growthBuffer == 0) {      // move head and tail both
         updateTail(myState);
         updateHead(myState);
-    } else if(myState.snake.growthBuffer > 0) { // only need to move head, tail remains at its place
+    } else if (myState.snake.growthBuffer > 0) { // only need to move head, tail remains at its place
         myState.snake.growthBuffer -= 1;
         updateHead(myState);
     } else {                      // only need to move tail, head remains
         updateTail(myState);
         myState.snake.growthBuffer += 1;
-    }  
+    }
 
     // if(myState.food.length == 0) {
     //     spawnFruit();
@@ -447,24 +447,24 @@ function loadContent() {
         results.forEach(({ src, img }) => {
             image_elems[src] = img;
         });
-        
-    });    
+
+    });
 }
 
 function isNameValid(username) {
     let msg = "";
-    if(username.includes(",")) { msg = "Username can not contain commas."; }
-    if(username.length < 3 || username.length > 15) { msg = "Username should have atleast 3 and atmost 15 characters."; }
+    if (username.includes(",")) { msg = "Username can not contain commas."; }
+    if (username.length < 3 || username.length > 15) { msg = "Username should have atleast 3 and atmost 15 characters."; }
     return msg;
 }
 
 function validateUsername(username) {
     let errorMsg = isNameValid(username);
-    if(errorMsg != "") {
+    if (errorMsg != "") {
         let el = document.getElementById("usernameError");
         el.innerHTML = errorMsg;
         el.style.display = "block";
-       return false;
+        return false;
     }
     document.getElementById("usernameError").classList.toggle("hidden");
     return true;
@@ -476,19 +476,19 @@ function start() {
 
     document.getElementById("startModal").addEventListener("hidden.bs.modal", () => {
         let username = document.getElementById("username").value;
-        for(let el of document.getElementsByClassName("username-value")) {
+        for (let el of document.getElementsByClassName("username-value")) {
             el.innerHTML = username;
         }
         graphicsMode = document.getElementById("mode").value;
-        if(!validateUsername(username)) {
+        if (!validateUsername(username)) {
             return;
         }
         user.username = username;
 
-        if(isFirst) {
+        if (isFirst) {
             Array.from(document.getElementsByClassName("retry")).forEach(el => { el.classList.toggle("hidden"); });
             Array.from(document.getElementsByClassName("start")).forEach(el => { el.classList.toggle("hidden"); });
-            
+
             document.getElementById("mainBody").classList.toggle("hidden");
             // document.getElementById("mainBody").classList.toggle("d-flex");
 
@@ -513,48 +513,48 @@ function setupInput(myState) {
 
 function inputHandler(event, myState) { // event listeners for keydowns, stores the dir vector in move
     const keys = {
-        ArrowUp: {x: 0, y: -1},
-        ArrowDown: {x: 0, y: 1},
-        ArrowRight: {x: 1, y: 0},
-        ArrowLeft: {x: -1, y: 0},
+        ArrowUp: { x: 0, y: -1 },
+        ArrowDown: { x: 0, y: 1 },
+        ArrowRight: { x: 1, y: 0 },
+        ArrowLeft: { x: -1, y: 0 },
 
-        W: {x: 0, y: -1},
-        A: {x: -1, y: 0},
-        S: {x: 0, y: 1},
-        D: {x: 1, y: 0},
+        W: { x: 0, y: -1 },
+        A: { x: -1, y: 0 },
+        S: { x: 0, y: 1 },
+        D: { x: 1, y: 0 },
 
-        w: {x: 0, y: -1},
-        a: {x: -1, y: 0},
-        s: {x: 0, y: 1},
-        d: {x: 1, y: 0}
+        w: { x: 0, y: -1 },
+        a: { x: -1, y: 0 },
+        s: { x: 0, y: 1 },
+        d: { x: 1, y: 0 }
     }
 
     let input = keys[event.key];
-    if(!input) { return; }
-    if(myState.inputBuffer.length != myState.inputBufferSize) {
+    if (!input) { return; }
+    if (myState.inputBuffer.length != myState.inputBufferSize) {
         myState.inputBuffer.push(input);
         let len = myState.inputBuffer.length;
-        if(len >= 2) {
-            if(checkOpposite(input, myState.inputBuffer[len-2]) || getDirString(input.x, input.y) == getDirString(myState.inputBuffer[len-2].x, myState.inputBuffer[len-2].y)) {
+        if (len >= 2) {
+            if (checkOpposite(input, myState.inputBuffer[len - 2]) || getDirString(input.x, input.y) == getDirString(myState.inputBuffer[len - 2].x, myState.inputBuffer[len - 2].y)) {
                 myState.inputBuffer.pop();
             }
         } else {
-            if(checkOpposite(input, myState.snake.dir) || getDirString(input.x, input.y) == getDirString(myState.snake.dir.x, myState.snake.dir.y)) {
+            if (checkOpposite(input, myState.snake.dir) || getDirString(input.x, input.y) == getDirString(myState.snake.dir.x, myState.snake.dir.y)) {
                 myState.inputBuffer.pop();
             }
         }
     }
-    
-    if(myState.isPaused == true && myState.isFinished == false) {
-        if(input.x == 1 && input.y == 0) {
+
+    if (myState.isPaused == true && myState.isFinished == false) {
+        if (input.x == 1 && input.y == 0) {
             myState.inputBuffer.push(input);
         }
-        if(!(input.x == -1 && input.y == 0)){
+        if (!(input.x == -1 && input.y == 0)) {
             myState.isPaused = false;
             startGameLoop(myState);
         }
     }
-        
+
     // if(event.key=="p") { //TODO: furnish this
     //     pauseGame();
     // }
@@ -565,19 +565,19 @@ function checkOpposite(dir1, dir2) {
 }
 
 function startGameLoop(myState) {
-    if(myState.isPaused) { return; }
+    if (myState.isPaused) { return; }
     myState.startTimeUNIX = new Date();
     myState.startTime = performance.now();
     gameLoop(myState);
 }
 
 function consumeFruitAt(myState, x, y) {
-    if(x>=myState.nColumns || x<0 || y>=myState.nRows || y<0) {
-        console.error("Index out of bounds"); 
-        return 0; 
+    if (x >= myState.nColumns || x < 0 || y >= myState.nRows || y < 0) {
+        console.error("Index out of bounds");
+        return 0;
     } //TODO: add similar exhaustive checks at all places
-    if(myState.grid[x][y].length != 0 && myState.grid[x][y][0].type == "fruit") { //since only one fruit can be present if there is anything
-        let fruit=myState.grid[x][y][0].entity;
+    if (myState.grid[x][y].length != 0 && myState.grid[x][y][0].type == "fruit") { //since only one fruit can be present if there is anything
+        let fruit = myState.grid[x][y][0].entity;
         fruit.onEat(fruit, myState);
         deleteFruit(myState, x, y);
         spawnFruit(myState);
@@ -589,61 +589,61 @@ function consumeFruitAt(myState, x, y) {
 
 function deleteFruit(myState, x, y) {
     myState.grid[x][y] = [];
-    const idx = myState.food.findIndex(f => f.x === x && f.y === y )
+    const idx = myState.food.findIndex(f => f.x === x && f.y === y)
     if (idx !== -1) {
         myState.food.splice(idx, 1)
     }
 }
 
-function updateHead(myState){ // updates the sprite of new head and the next element according to direction of motion
+function updateHead(myState) { // updates the sprite of new head and the next element according to direction of motion
     let [next_x, next_y] = myState.snake.nextPos(myState);
 
-    myState.snake.body.unshift({x: next_x, y: next_y, sprite:`head_${getDirString(myState.snake.dir.x, myState.snake.dir.y)}.png`}) // add new head to snake[]
+    myState.snake.body.unshift({ x: next_x, y: next_y, sprite: `head_${getDirString(myState.snake.dir.x, myState.snake.dir.y)}.png` }) // add new head to snake[]
 
     myState.grid[next_x][next_y].push(new Cell("snake_head", myState.snake.head));
-    if(myState.snake.length>=3) { //for length=2 snake.unshift handles the image change //TODO: what about length=1??!! implement before adding negative fruits!
+    if (myState.snake.length >= 3) { //for length=2 snake.unshift handles the image change //TODO: what about length=1??!! implement before adding negative fruits!
 
         let del_x = myState.snake.dir.x - myState.snake.prevdir.x;     // variables dirs are in such a way that the following checks form some nice patterns depending on del_x, del_y 
         let del_y = myState.snake.dir.y - myState.snake.prevdir.y;     //(since for a particular turn image, both possible scenarios lead to the same and unique del_x, del_y pair)
 
-        if(del_x==0 && del_y==0){ // no change in direction
+        if (del_x == 0 && del_y == 0) { // no change in direction
             myState.snake.body[1].sprite = (myState.snake.dir.x != 0) ? "body_horizontal.png" : "body_vertical.png"
         } else {
-            if(del_x == -1){del_x=0}    // this is just mapping -1 to 0, 1 to 1 
-            if(del_y == -1){del_y=0}    // to access turn_images array
+            if (del_x == -1) { del_x = 0 }    // this is just mapping -1 to 0, 1 to 1 
+            if (del_y == -1) { del_y = 0 }    // to access turn_images array
 
             myState.snake.body[1].sprite = turn_images[del_x][del_y]; // the array is made so that this works out
-        }   
-        if(myState.snake.length>2) {
+        }
+        if (myState.snake.length > 2) {
             let cellsAtPrevHead = myState.grid[myState.snake.body[1].x][myState.snake.body[1].y];
-            cellsAtPrevHead[cellsAtPrevHead.length-1] = new Cell("snake_body", myState.snake.body[1]);
+            cellsAtPrevHead[cellsAtPrevHead.length - 1] = new Cell("snake_body", myState.snake.body[1]);
         }
     }
 }
 
-function updateTail(myState){ // updates the sprite of the new tail and paints background at prev location of tail 
+function updateTail(myState) { // updates the sprite of the new tail and paints background at prev location of tail 
     let tailDir = {
         x: myState.snake.dir.x,
         y: myState.snake.dir.y
     } //nothing to change for length = 2
-    if(myState.snake.length!=2) {
-        let del_x = myState.snake.body[myState.snake.length-3].x - myState.snake.body[myState.snake.length-2].x;     // assign the direction between the current 3rd last and 2nd last segments for the new tail, 
-        let del_y = myState.snake.body[myState.snake.length-3].y - myState.snake.body[myState.snake.length-2].y;     // since tail always corresponds to the direction of the difference between positions of current last and 2nd last tile
+    if (myState.snake.length != 2) {
+        let del_x = myState.snake.body[myState.snake.length - 3].x - myState.snake.body[myState.snake.length - 2].x;     // assign the direction between the current 3rd last and 2nd last segments for the new tail, 
+        let del_y = myState.snake.body[myState.snake.length - 3].y - myState.snake.body[myState.snake.length - 2].y;     // since tail always corresponds to the direction of the difference between positions of current last and 2nd last tile
         tailDir.x = del_x;
         tailDir.y = del_y;
 
-        if(del_x == myState.nColumns - 1 || del_x == -(myState.nColumns - 1)) {
+        if (del_x == myState.nColumns - 1 || del_x == -(myState.nColumns - 1)) {
             tailDir.x = (del_x > 0) ? -1 : +1;
-        } else if(del_y == myState.nRows - 1 || del_y == -(myState.nRows - 1)) {
+        } else if (del_y == myState.nRows - 1 || del_y == -(myState.nRows - 1)) {
             tailDir.y = (del_y > 0) ? -1 : +1;
         }
     }
 
-    myState.snake.body[myState.snake.length-2].sprite=`tail_${getDirString(-tailDir.x, -tailDir.y)}.png` // - passed in arguments since it flips up-down and right-left, which is the intended image [we had tail dir set as dir of movement, but tail images are named oppositely]
-    
-    let cellsAtNewTail = myState.grid[myState.snake.body[myState.snake.length-2].x][myState.snake.body[myState.snake.length-2].y];
-    cellsAtNewTail[0] = new Cell("snake_tail", myState.snake.body[myState.snake.length-2]);
-    
+    myState.snake.body[myState.snake.length - 2].sprite = `tail_${getDirString(-tailDir.x, -tailDir.y)}.png` // - passed in arguments since it flips up-down and right-left, which is the intended image [we had tail dir set as dir of movement, but tail images are named oppositely]
+
+    let cellsAtNewTail = myState.grid[myState.snake.body[myState.snake.length - 2].x][myState.snake.body[myState.snake.length - 2].y];
+    cellsAtNewTail[0] = new Cell("snake_tail", myState.snake.body[myState.snake.length - 2]);
+
     let cellsAtPrevTail = myState.grid[myState.snake.tail.x][myState.snake.tail.y];
     cellsAtPrevTail.shift();
 
@@ -674,13 +674,13 @@ function ateSpeedUp(fruit, myState) {
 }
 
 function resetUI(myState) {
-    for(let el of document.getElementsByClassName("score-value")) {
+    for (let el of document.getElementsByClassName("score-value")) {
         el.innerHTML = 2;
     }
-    for(let el of document.getElementsByClassName("time-value")) {
+    for (let el of document.getElementsByClassName("time-value")) {
         el.innerHTML = "0.000s";
     }
-    for(let el of document.getElementsByClassName("length-value")) {
+    for (let el of document.getElementsByClassName("length-value")) {
         el.innerHTML = 2;
     }
 
@@ -702,15 +702,15 @@ function initGame(myState) {
 }
 
 function gameLoop(myState, lastStateUpdate = 0, lastCanvasUpdate = 0) {
-    if(myState.isPaused) { return; }
+    if (myState.isPaused) { return; }
 
     let curTime = performance.now();
-    if(curTime - lastStateUpdate > myState.tickRate) {
+    if (curTime - lastStateUpdate > myState.tickRate) {
         updateState(myState);
         lastStateUpdate = curTime;
     }
 
-    if(curTime - lastCanvasUpdate > myState.graphicsRefreshRate) {
+    if (curTime - lastCanvasUpdate > myState.graphicsRefreshRate) {
         updateCanvas(myState);
         lastCanvasUpdate = curTime;
     }
@@ -723,16 +723,16 @@ function gameLoop(myState, lastStateUpdate = 0, lastCanvasUpdate = 0) {
 }
 
 function updateUI(myState) {
-    for(let el of document.getElementsByClassName("score-value")) {
+    for (let el of document.getElementsByClassName("score-value")) {
         el.innerHTML = myState.score;
     }
-    for(let el of document.getElementsByClassName("time-value")) {
-        el.innerHTML = `${(myState.snake.timeAlive/1000).toFixed(3)}s`;
+    for (let el of document.getElementsByClassName("time-value")) {
+        el.innerHTML = `${(myState.snake.timeAlive / 1000).toFixed(3)}s`;
     }
-    for(let el of document.getElementsByClassName("length-value")) {
+    for (let el of document.getElementsByClassName("length-value")) {
         el.innerHTML = myState.snake.length;
-    } 
-    for(let el of document.getElementsByClassName("high-score-value")) {
+    }
+    for (let el of document.getElementsByClassName("high-score-value")) {
         el.innerHTML = Math.max(myState.score, user.highScore(myState));
     }
 
@@ -743,7 +743,7 @@ function updateUI(myState) {
     myState.snake.immunityTicks > 0 ? effects.push("Immunity") : null;
     myState.snake.speedTicks > 0 ? effects.push("Speed") : null;
 
-    if(effects.length > 0) {
+    if (effects.length > 0) {
         document.getElementById("active-effects-instrip").innerHTML = `Active: ${effects.join(", ")}`;
     } else {
         document.getElementById("active-effects-instrip").innerHTML = "";

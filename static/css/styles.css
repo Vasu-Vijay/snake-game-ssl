@@ -15,22 +15,22 @@ body {
 
 .navbar {
     border-bottom: 5px solid black;
-    font-size:1.2rem;
+    font-size: 1.2rem;
 }
 
 .navbar-brand {
-    padding:0;
+    padding: 0;
 }
 
 #brand-icon {
-    height:30px;
-    width:30px;
-    rotate:-10deg;
+    height: 30px;
+    width: 30px;
+    rotate: -10deg;
     box-shadow: 2px 2px black;
 }
 
 #brand-title {
-    color:red;
+    color: red;
     font-weight: 400;
     font-size: 1.5rem;
 }
@@ -51,7 +51,7 @@ body {
 
 #main-row {
     margin-top: 4vh;
-    margin-left:1vw;
+    margin-left: 1vw;
 }
 
 #right-panel {
@@ -75,9 +75,9 @@ body {
 }
 
 #highscore-msg-instrip {
-    
+
     text-shadow: 2px 2px rgb(116, 116, 116);
-} 
+}
 
 canvas {
     border: 2px solid black;
@@ -94,7 +94,7 @@ canvas {
 }
 
 .info-card-header {
-    font-size:27px;
+    font-size: 27px;
 }
 
 .card-underline {
@@ -106,11 +106,11 @@ canvas {
 
 #score-card {
     background-color: #ffb2ef;
-    rotate:-1deg;
+    rotate: -1deg;
 }
 
 #score-label {
-    font-size:14px;
+    font-size: 14px;
     line-height: 1.2;
 }
 
@@ -141,11 +141,11 @@ canvas {
 
 #time-card {
     background-color: #a388ee;
-} 
+}
 
 #active-effects-card {
     background-color: #8ff769;
-    rotate:1deg;
+    rotate: 1deg;
 }
 
 .progress-bar-wrapper {
@@ -227,30 +227,32 @@ canvas {
 
 #highScoreDisplayer {
     font-size: 32px;
-    color:#ffbf00;
+    color: #ffbf00;
 }
 
-#scoreDisplayer{
+#scoreDisplayer {
     font-size: 32px;
-    color:#5400ff ;
+    color: #5400ff;
 }
+
 #timeDisplayer {
-    color:#5400ff ;
+    color: #5400ff;
 }
 
 #immunityContainer {
-    color:#efbf04 ;
+    color: #efbf04;
 }
 
 #immunityBar {
     background: #f99ca5cc;
 }
+
 #displays {
     width: 450px;
 }
 
 label.form-label {
-    color:#0505f5;
+    color: #0505f5;
 }
 
 #usernameError {
@@ -271,21 +273,24 @@ label.form-label {
 #high-score-message {
     font-size: 32px;
     animation: pulseText 1.5s infinite ease-in-out;
-    color:#ffbf00;
+    color: #ffbf00;
 }
 
-#new-high-score{
+#new-high-score {
     font-size: 24px;
     font-weight: bold;
-    color:#ffbf00;
+    color: #ffbf00;
 }
+
 @keyframes pulseText {
     0% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.15);
     }
+
     100% {
         transform: scale(1);
     }
@@ -307,7 +312,9 @@ label.form-label {
     background-color: #0d6efd;
 }
 
-.btn:hover, .btn:focus, .btn:active:focus {
+.btn:hover,
+.btn:focus,
+.btn:active:focus {
     box-shadow: 3px 3px black;
     border: 2px solid black;
     background-color: #0d6efd;
@@ -326,10 +333,11 @@ label.form-label {
     border: none;
     font-size: 20px;
     color: #0505f5;
-    background-color: #76D7C4 ;
+    background-color: #76D7C4;
 }
 
-.table-container td,th{
+.table-container td,
+th {
     border: none;
     text-align: center;
 }
@@ -343,7 +351,7 @@ label.form-label {
 
 .modal-title {
     font-size: 3rem;
-    color:rgb(0, 85, 8);
+    color: rgb(0, 85, 8);
 }
 
 .modal-content {
@@ -355,13 +363,14 @@ label.form-label {
 }
 
 .table-container {
-  max-height: 150px;
-  overflow-y: auto;
+    max-height: 150px;
+    overflow-y: auto;
 }
 
-.modal-body { /* Used in Firefox browser */
+.modal-body {
+    /* Used in Firefox browser */
     scrollbar-width: thin;
-    scrollbar-color: #cf787c transparent; 
+    scrollbar-color: #cf787c transparent;
 }
 
 /* For other browser like chrome,safari,edge,etc.. */
