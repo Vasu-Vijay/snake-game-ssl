@@ -362,7 +362,7 @@ backup_logs(){
 Log_Rotation(){
     local attempt=0
     while true; do
-        read -er -n 1 -p $'\e[31mAre you sure you want to Backup Logs and update your history.txt? (y/n) \e[0m' confirmation
+        read -er -n 1 -p $'\001\e[31m\002Are you sure you want to Backup Logs and update your history.txt? (y/n) \001\e[0m\002' confirmation
             if valid_command_quit "$confirmation";then
                 return 1
             elif [[ "$confirmation" == "n" ]]; then
@@ -372,7 +372,7 @@ Log_Rotation(){
                 if [[ -f ./backup/history.tar.gz ]];then
                     local attemp=0
                     while true;do
-                        read -ern 1 -p $'\e[33mA backup file already exist.\nDo you want to overwrite it? (y/n) \e[0m' input
+                        read -ern 1 -p $'\001\e[33m\002A backup file already exist.\nDo you want to overwrite it? (y/n) \001\e[0m\002' input
                         if valid_command_quit "$input"; then
                             return 1
                         elif [[ "$input" == "n" ]];then
@@ -414,13 +414,45 @@ Log_Rotation(){
 #Restore previous log files
 Restore_Logs(){
 
-    [ ! -f "./backup/history.tar.gz" ] && printf "\033c" && printf "\e[31mNo Stored Logs Found\e[0m\n"
-    [ -f "./backup/history.tar.gz" ] && tar -xzf "./backup/history.tar.gz"  && printf "\033c" && printf "\e[32mRestored Logs\e[0m\n" 
-    
-    local last=$(tail -1 history.txt )
-    if [[ ! -z "$last" ]];then
-        printf "\n" >> history.txt
+    [ ! -f "./backup/history.tar.gz" ] && printf "\033c" && printf "\e[31mNo Stored Logs Found\e[0m\n" && return 1
+
+    if [[ -f ./backup/history.tar.gz ]];then
+        
+        local attempt=0
+        while true ;do
+            read -ern 1 -p $'\001\e[33m\002Do you want to restore logs? (y/n) \001\e[0m\002' confirmation
+            if valid_command_quit "$confirmation"; then
+                return 1
+            elif [[ "$confirmation" == "n" ]]; then
+                printf "\033c"
+                return 1
+            elif [[ "$confirmation" == "y" ]]; then
+                mv history.txt history.tmp
+                tar -xzf "./backup/history.tar.gz"
+                cat history.txt >> history.tmp
+                (echo "$first_line";grep -vE "^$" history.tmp | grep -v "$first_line" | sort -u ) > history.txt
+                rm history.tmp
+                local last=$(tail -1 history.txt )
+                if [[ ! -z "$last" ]];then
+                    printf "\n" >> history.txt
+                fi
+
+                printf "\033c"
+                printf "\e[32mRestored Log File\e[0m\n"
+                break
+            else
+                if [[ "$attempt" -eq 0 ]];then
+                    printf "\e[1A\e[2K"
+                else 
+                    printf "\e[1A\e[2K"
+                    printf "\e[1A\e[2K"
+                fi
+                printf "\e[31mEnter a Valid Commnad\n\e[0m"
+            fi
+            attempt=1
+        done
     fi
+
 }
 
 #View the logs sorted based on specific filters(time stamp as default.)
