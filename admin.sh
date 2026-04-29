@@ -318,10 +318,10 @@ Query_User(){
             break    
         else
             if [[ "$attempt" -eq 0 ]];then
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
             else 
-                printf "\e[1A\e[K"
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
+                printf "\e[1A\e[2K"
             fi        
             printf "\e[31mPlease enter a valid Username\e[0m\n"
         fi
@@ -348,18 +348,28 @@ Recent_Score(){
 
 #Perform Log Rotation by saving last 10 entries of history.txt
 Log_Rotation(){
-    tail -n +2 history.txt| tail -10 > history.tmp
-    tar -czf history.tar.gz history.txt
+    printf "\e[31mAre you sure you want to Backup Logs and update your history.txt?\n\e[0m"
+    grep -vE "^$" history.txt | tail -n +2 | tail -10 > history.tmp
+    mkdir -p backup
+    tar -czf ./backup/history.tar.gz history.txt
     (echo "$first_line"; cat history.tmp) > history.txt
-    
+    printf "\n" >> history.txt
+    rm history.tmp
     printf "\033c"
     printf "\e[32mLogs have been backed up\e[0m\n"
+    printf "\e[32mHistory.txt has been updated\e[0m\n"
 }
 
 #Restore previous log files
 Restore_Logs(){
-    [ ! -f "history.tar.gz" ] && printf "\033c" && printf "\e[31mNo Stored Logs Found\e[0m\n"
-    [ -f "history.tar.gz" ] && tar -xzf "history.tar.gz" && printf "\033c" && printf "\e[32mRestored Logs\e[0m\n"     
+
+    [ ! -f "./backup/history.tar.gz" ] && printf "\033c" && printf "\e[31mNo Stored Logs Found\e[0m\n"
+    [ -f "./backup/history.tar.gz" ] && tar -xzf "./backup/history.tar.gz"  && printf "\033c" && printf "\e[32mRestored Logs\e[0m\n" 
+    
+    local last=$(tail -1 history.txt )
+    if [[ ! -z "$last" ]];then
+        printf "\n" >> history.txt
+    fi
 }
 
 #View the logs sorted based on specific filters(time stamp as default.)
@@ -380,10 +390,10 @@ Sorted_View(){
             break
         else 
             if [[ "$attempt" -eq 0 ]];then
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
             else 
-                printf "\e[1A\e[K"
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
+                printf "\e[1A\e[2K"
             fi 
             printf "\033c"
             printf "\e[31mEnter a Valid Command\e[0m\n"
@@ -404,14 +414,14 @@ Sorted_View(){
                 break
             else
                 if [[ "$attempt" -eq 0 ]];then
-                    printf "\e[1A\e[K"
-                    printf "\e[1A\e[K"
-                    printf "\e[1A\e[K"
+                    printf "\e[1A\e[2K"
+                    printf "\e[1A\e[2K"
+                    printf "\e[1A\e[2K"
                 else 
-                    printf "\e[1A\e[K"
-                    printf "\e[1A\e[K"
-                    printf "\e[1A\e[K"
-                    printf "\e[1A\e[K"
+                    printf "\e[1A\e[2K"
+                    printf "\e[1A\e[2K"
+                    printf "\e[1A\e[2K"
+                    printf "\e[1A\e[2K"
                 fi        
                 printf "\e[31mEnter a Valid Command\e[0m\n"
             fi        
@@ -505,7 +515,7 @@ calculate_records(){
 }
 
 timestamp_range(){
-    printf "\e[35mEnter the range of timestamps to delete entries\n"
+    printf "\e[35mEnter the range of timestamps\n"
     printf "Enter the  timestamp in the format ( YYYY-MM-DD HH:MM:SS )\n\e[0m"
     local attempt=0
     while true ;do
@@ -517,10 +527,10 @@ timestamp_range(){
             return 1
         elif ! Validate_Timestamp "$start_time" ; then
             if [[ "$attempt" -eq 0 ]];then
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
             else 
-                printf "\e[1A\e[K"
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
+                printf "\e[1A\e[2K"
             fi
             printf "\e[31mEnter a valid Timestamp\n\e[0m"
         else
@@ -538,10 +548,10 @@ timestamp_range(){
             return 1
         elif ! Validate_Timestamp "$end_time" ; then
             if [[ "$attempt" -eq 0 ]];then
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
             else 
-                printf "\e[1A\e[K"
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
+                printf "\e[1A\e[2K"
             fi
             printf "\e[31mEnter a valid Timestamp\n\e[0m"
         else
@@ -565,12 +575,7 @@ Analytics(){
         if valid_command_quit "$input";then
             return 1
         elif ! valid_command 2 "$input";then
-            if [[ "$attempt" -eq 0 ]];then
-                printf "\e[1A\e[K"
-            else 
-                printf "\e[1A\e[K"
-                printf "\e[1A\e[K"
-            fi
+            printf "\033c"
             printf "\e[31mEnter a valid Command\n\e[0m"
         else
             break
@@ -637,10 +642,10 @@ delete_user(){
             break
         else
             if [[ "$attempt" -eq 0 ]];then
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
             else 
-                printf "\e[1A\e[K"
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
+                printf "\e[1A\e[2K"
             fi            
             printf "\e[31mEnter a valid username\n\e[0m"
         fi
@@ -660,10 +665,10 @@ delete_user(){
             return 0
         else
             if [[ "$attempt" -eq 0 ]];then
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
             else 
-                printf "\e[1A\e[K"
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
+                printf "\e[1A\e[2K"
             fi            
             printf "\e[31mEnter a valid command\n\e[0m"
         fi
@@ -705,10 +710,10 @@ delete_timestamps(){
             break
         else 
             if [[ "$attempt" -eq 0 ]];then
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
             else 
-                printf "\e[1A\e[K"
-                printf "\e[1A\e[K"
+                printf "\e[1A\e[2K"
+                printf "\e[1A\e[2K"
             fi
             printf "\e[31mPlease Enter a Valid Command\n\e[0m"
         fi    
@@ -718,24 +723,47 @@ delete_timestamps(){
 }
 
 delete_misformatted_records(){
-    awk -F "," '{
-        if (NR==1){print $0}
-        else if ($0 ~ /^\[[0-9]+-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\],[^,]+,[0-9]+,[A-Z]+,[0-9]+[.]?[0-9]*$/) {
-            line=$0
-            t_stamp=$1
-            split(t_stamp,a,"]");
-            split(a[1],b,"[");
-            if (!system("date -d \"" b[2] "\" \"+%Y-%m-%d %H:%M:%S\" >/dev/null 2>&1")){
-                if ($4 !~ /(WALL|SELF)/){}
-                else {print line}
-            }                
-        }
-    }' history.txt > history.tmp
-    mv history.tmp history.txt
-    printf "\033c"
-    printf "\e[32mNo misformated Records Remains\e[0m\n"
-    printf "\e[32mhistory.txt has been updated\e[0m\n"
-    update_stats
+    attempt=0
+    while true; do
+        read -ern 1 -p $'\001\e[31m\002Are you sure you want to delete the records? (y/n) \001\e[0m\002' confirmation
+        if valid_command_quit "$confirmation";then
+            return 1
+        elif [[ "$confirmation" == "n" ]]; then
+            printf "\033c"
+            return 0
+        elif [[ "$confirmation" == "y" ]]; then
+            awk -F "," '{
+                if (NR==1){print $0}
+                else if ($0 ~ /^\[[0-9]+-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\],[^,]+,[0-9]+,[A-Z]+,[0-9]+[.]?[0-9]*$/) {
+                    line=$0
+                    t_stamp=$1
+                    split(t_stamp,a,"]");
+                    split(a[1],b,"[");
+                    if (!system("date -d \"" b[2] "\" \"+%Y-%m-%d %H:%M:%S\" >/dev/null 2>&1")){
+                        if ($4 !~ /(WALL|SELF)/){}
+                        else {print line}
+                    }                
+                }
+            }' history.txt > history.tmp
+            mv history.tmp history.txt
+            printf "\n" >> history.txt
+            printf "\033c"
+            printf "\e[32mNo misformated Records Remains\e[0m\n"
+            printf "\e[32mhistory.txt has been updated\e[0m\n"
+            update_stats
+            break
+        else 
+            if [[ "$attempt" -eq 0 ]];then
+                printf "\e[1A\e[2K"
+            else 
+                printf "\e[1A\e[2K"
+                printf "\e[1A\e[2K"
+            fi
+            printf "\e[31mPlease Enter a Valid Command\n\e[0m"
+        fi    
+        attempt=1 
+    done    
+
 }
 #Delete Entries from history.txt
 Delete_Entries(){
