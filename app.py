@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request
 import os
 import re
+from datetime import datetime
 
 files_array=[] 
+death_causes = ["WALL", "SELF"]
 
 def list_files_scandir(path='.'): # recursively find files in ./static/sprites folder
     with os.scandir(path) as entries:
@@ -27,6 +29,38 @@ def write_data():
     except IOError as e:
         print(f"Error writing to file: {e}")
 
+def validate_record(record_data):
+    # [2026-04-11 05:28:19],guest_user,3,WALL,2688
+    try: 
+        start_time, username, score, cause, time_alive = record_data.values()
+
+        valid_date = bool(datetime.strptime(start_time, "[%Y-%m-%d %H:%M:%S]"))
+        valid_format = bool(re.search("^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]$", start_time))
+
+        if (valid_date and valid_format) is not True:
+            return f"{valid_date}, {valid_format}, start_time_error"
+        
+        if len(username) <= 3 or len(username) >= 19:
+            return "username_length_error"
+
+        if not bool(re.search("^[A-Za-z0-9_]+$", username)):
+            return "invalid_chars_in_username"
+        
+        if int(score) < 2:
+            return "score_invalid"
+
+        if cause not in death_causes:
+            return "invalid_cause"
+        
+        if float(time_alive) <= 0 or not bool(re.search("^\d+(\.\d{0,3})?$", time_alive)):
+            return "invalid_time_alive"
+    
+        return None
+
+    except Exception as e:
+        return str(e)
+
+
 app = Flask(__name__)
 
 @app.route("/")
@@ -47,8 +81,16 @@ def save_score():
                 history_file.write("start_time,username,score,cause,time_alive\n")
                 history_file.truncate()
 
-            record = ",".join(record_data.values()) #TODO: sanitize data and check before writing, all edge cases
+            error = validate_record(record_data)
+            print(error)
+            if error:
+                return error
+                
+            start_time, username, score, cause, time_alive = record_data.values()
+
+            record = ",".join([start_time, username, score, cause, "{:.3f}".format(float(time_alive))]) #TODO: test for all edge cases
             history_file.write(record+"\n") #TODO: reformat this properly in future
+
     except Exception as e:
         return str(e) #TODO: if required format it properly
     else: 
