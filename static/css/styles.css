@@ -221,36 +221,6 @@ canvas {
     backdrop-filter: blur(2px);
 }
 
-
-
-
-
-#highScoreDisplayer {
-    font-size: 32px;
-    color: #ffbf00;
-}
-
-#scoreDisplayer {
-    font-size: 32px;
-    color: #5400ff;
-}
-
-#timeDisplayer {
-    color: #5400ff;
-}
-
-#immunityContainer {
-    color: #efbf04;
-}
-
-#immunityBar {
-    background: #f99ca5cc;
-}
-
-#displays {
-    width: 450px;
-}
-
 label.form-label {
     color: #0505f5;
 }
@@ -263,17 +233,20 @@ label.form-label {
     color: #0505f5;
 }
 
-
 #game-over {
     animation: pulseText 1.5s infinite ease-in-out;
     font-size: 3rem;
     color: #ff0000 !important;
 }
 
-#high-score-message {
+/* #high-score-message {
     font-size: 32px;
     animation: pulseText 1.5s infinite ease-in-out;
     color: #ffbf00;
+} */
+
+#highscore-msg-instrip {
+    animation: pulseText 1.5s infinite ease-in-out;
 }
 
 #new-high-score {
