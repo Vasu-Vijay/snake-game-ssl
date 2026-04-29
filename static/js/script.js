@@ -22,9 +22,9 @@ const CANVAS_WIDTH = N_COLUMNS * CELL_SIZE;
 const image_elems = {}                  // associative array containing <image_path> : <html img element> key-value pairs, which are pre-loaded before game start
 
 const turn_images = [["body_topleft.png", "body_bottomleft.png"],       // -1, -1   -1, +1     {del_x, del_y values}
-                    ["body_topright.png", "body_bottomright.png"]];     // +1, -1   +1, +1
+["body_topright.png", "body_bottomright.png"]];     // +1, -1   +1, +1
 
-const deathCauses = ["SELF", "WALL"]; 
+const deathCauses = ["SELF", "WALL"];
 
 var graphicsMode = "classic";           // set default graphics mode, to be implemented better
 
@@ -66,7 +66,7 @@ class User {
         data.append("time_alive", record.timeAlive);
 
         // send a POST request to the backend
-        fetch("/save_score", { 
+        fetch("/save_score", {
             "method": "POST",
             "body": data,
         }).then(function (response) {
@@ -486,7 +486,7 @@ function updateState(myState) {
     }
 
     // move head or tail or both depending on growthBuffer
-    if (myState.snake.growthBuffer == 0) {      
+    if (myState.snake.growthBuffer == 0) {
         updateTail(myState);
         updateHead(myState);
     } else if (myState.snake.growthBuffer > 0) {
@@ -510,8 +510,10 @@ function loadContent() {
 // check username validity
 function isNameValid(username) {
     let msg = "";
-    if (username.includes(",")) { msg = "Username can not contain commas."; }
-    if (username.length < 3 || username.length > 15) { msg = "Username should have atleast 3 and atmost 15 characters."; }
+    if (!(/^[A-Za-z0-9_]+$/.test(username))) {
+        msg = "Username can only contain alphanumeric characters and underscores.";
+    }
+    if (username.length < 4 || username.length > 18) { msg = "Username should have atleast 3 and atmost 15 characters."; }
     return msg;
 }
 
@@ -531,21 +533,22 @@ function validateUsername(username) {
 // update UI on start
 function start() {
 
+    let username = document.getElementById("username").value;
+    for (let el of document.getElementsByClassName("username-value")) {
+        el.innerHTML = username;
+    }
+    graphicsMode = document.getElementById("mode").value;
+
+    if (!validateUsername(username)) {
+        return;
+    }
+    user.username = username;
     startModal.hide();
 
     // wait for hiding to finish
     document.getElementById("startModal").addEventListener("hidden.bs.modal", () => {
         // retrieve and validate data
-        let username = document.getElementById("username").value;
-        for (let el of document.getElementsByClassName("username-value")) {
-            el.innerHTML = username;
-        }
-        graphicsMode = document.getElementById("mode").value;
 
-        if (!validateUsername(username)) {
-            return;
-        }
-        user.username = username;
 
         // change start modal to retry modal and display homepage
         if (isFirst) {
@@ -668,7 +671,7 @@ function deleteFruit(myState, x, y) {
 }
 
 // updates snake.body with new head and a changed 2nd segment; and update grid
-function updateHead(myState) { 
+function updateHead(myState) {
     let [next_x, next_y] = myState.snake.nextPos(myState);
 
     // add new head to snake.body
