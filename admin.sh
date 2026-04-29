@@ -399,6 +399,7 @@ handle_misformatted_records(){
         while true; do
             printf "\033c"
             printf "\e[31mThere are misformatted records in history.txt. Choose a further course of action\e[0m\n"
+            options=("1] View Misformatted Records" "2] Delete Misformatted Records" "3] Exit")
             tabular_display
             read -ern 1 -p $'\001\e[33m\002Enter command : \001\e[0m\002' command 
             #exit in case of command received is q
@@ -412,7 +413,6 @@ handle_misformatted_records(){
                     break
                 fi
             else 
-                printf "\033c" 
                 printf "\e[31mPlease enter a valid Command\e[0m\n"
             fi
         done
