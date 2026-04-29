@@ -293,6 +293,7 @@ menu_display(){
 #Exit the menu
 Exit(){
     printf "\033c"
+    rm -f misformatted.tmp history.tmp
     exit
 }
 
@@ -870,12 +871,63 @@ Delete_Entries(){
     ${delete_methods[$method-1]}
 }
 
+view_misformatted_records(){
+    less -N misformatted.tmp
+}
+
+check_misformatted(){
+    awk -F "," '{
+        if (NR==1){print $0}
+        else if ($0 ~ /^\[[0-9]+-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\],[^,]+,[0-9]+,[A-Z]+,[0-9]+[.]?[0-9]*$/) {
+            line=$0
+            t_stamp=$1
+            split(t_stamp,a,"]");
+            split(a[1],b,"[");
+            if (!system("date -d \"" b[2] "\" \"+%Y-%m-%d %H:%M:%S\" >/dev/null 2>&1")){
+                if ($4 !~ /(WALL|SELF)/){print line}
+                else {}
+            } else {
+                print line
+            }
+        } else { print $0 }
+    }' history.txt > misformatted.tmp
+}
+
+handle_misformatted_records(){
+    check_misformatted
+    local lines=$(grep -nvE "^$" misformatted.tmp | wc -l | cut -d " " -f1)
+    if [[ "$lines" -ne 1 ]]; then
+        misformat_options=("view_misformatted_records" "delete_misformatted_records" "Exit")
+        while true; do
+            printf "\033c"
+            printf "\e[31mThere are misformatted records in history.txt. Choose a further course of action\e[0m\n"
+            options=("1] View misformatted records" "2] Delete Misformatted Records" "3] Exit")
+            tabular_display
+            read -ern 1 -p $'\001\e[33m\002Enter command : \001\e[0m\002' command #bash does not interpret escaping inside "" but understands it in $''
+
+            if [[ "$command" == 'q' ]]; then
+                Exit
+            elif valid_command ${#options[@]} $command; then
+                ${misformat_options[$command - 1]}
+                if [[ "$command" == 2 ]];then
+                    break
+                fi
+            else 
+                printf "\033c" 
+                printf "\e[31mPlease enter a valid Command\e[0m\n"
+            fi
+        done
+    fi
+}
+
 init(){
+    printf "\033c"
     [ ! -f "history.txt" ] && printf "\033c" && printf "\e[31mhistory.txt file not found.\e[0m\n" && exit
     [[ $(head -1 history.txt) != "$first_line" ]] && printf "\033c" && printf "\e[31mInvalid file format.\e[0m\n" && exit
+    handle_misformatted_records
     update_stats
     history -c #prevents terminal history to be accessed in the process
-    printf "\033c"
+
     #Display menu untill not exited
     while true; do
         menu_display
