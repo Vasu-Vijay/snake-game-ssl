@@ -409,7 +409,9 @@ handle_misformatted_records(){
             #validate command
             elif valid_command ${#misformat_options[@]} $command; then
                 ${misformat_options[$command - 1]}
-                if [[ "$command" == 2 ]];then
+                x=$(echo $?)
+                if [[ "$command" == 2 && "$x" -eq 0 ]];then
+                    
                     break
                 fi
             else 
@@ -623,7 +625,7 @@ delete_misformatted_records(){
             return 1
         elif [[ "$confirmation" == "n" ]]; then
             printf "\033c"
-            return 0
+            return 1
         elif [[ "$confirmation" == "y" ]]; then
 
         #copy valid entries from history.txt to history.tmp and then overwrite history.txt
@@ -705,7 +707,7 @@ Delete_Entries(){
 #create a backup log file
 backup_logs(){
     #remove empty lines , first line(heading) and last 10 entries from sorted history.txt
-    grep -vE "^$" history.txt | sort | tail -n +2 | tail -10 > history.tmp
+    grep -vE "^$" history.txt | tail -n +2 | sort | tail -10 > history.tmp
 
     #make a folder backup for storing backups
     mkdir -p backup
