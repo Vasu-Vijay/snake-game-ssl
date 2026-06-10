@@ -391,7 +391,7 @@ class Snake {
         let [next_x, next_y] = this.nextPos(game);
 
         // add new head to snake.body
-        this.body.unshift({ x: next_x, y: next_y, sprite: `head_${utils.getDirString(this.dir.x, this.dir.y)}.png` })
+        this.body.unshift({ x: next_x, y: next_y, sprite: `head_${utils.getDirStr(this.dir)}.png` })
 
         // update grid for head
         game.grid[next_x][next_y].push(new Cell("snake_head", this.head));
@@ -442,7 +442,7 @@ class Snake {
         }
 
         // update to new tail
-        this.body[this.length - 2].sprite = `tail_${utils.getDirString(-tailDir.x, -tailDir.y)}.png`;
+        this.body[this.length - 2].sprite = `tail_${utils.getDirStr({x: -tailDir.x, y:-tailDir.y})}.png`;
 
         // update grid
         let cellsAtNewTail = game.grid[this.body[this.length - 2].x][this.body[this.length - 2].y];
@@ -617,7 +617,6 @@ const UI = {
         this.update(game);
 
         // display death modal
-        //let endModal = new bootstrap.Modal(document.getElementById("endModal")); //REFAC: use App vars
         App.bsmodals.end.show();
 
         this.fillStatsModal(game, cause);
@@ -633,8 +632,7 @@ const UI = {
 
     showStartModal() {
         // show start modal after page loads
-        //var startModal = new bootstrap.Modal(document.getElementById("startModal")); //REFAC: use App vars and init where required
-        App.bsmodals.start.show(); //REFAC: adjust timing accordingly
+        App.bsmodals.start.show();
     },
 
     // check username and display error in UI
@@ -695,11 +693,11 @@ const Input = {
             game.inputBuffer.push(inputDir);
             let len = game.inputBuffer.length;
             if (len >= 2) {
-                if (utils.checkOpposite(inputDir, game.inputBuffer[len - 2]) || utils.getDirString(inputDir.x, inputDir.y) == utils.getDirString(game.inputBuffer[len - 2].x, game.inputBuffer[len - 2].y)) {
+                if (utils.checkOpposite(inputDir, game.inputBuffer[len - 2]) || utils.checkSame(inputDir, game.inputBuffer[len-2])) {
                     game.inputBuffer.pop();
                 }
             } else {
-                if (utils.checkOpposite(inputDir, game.snake.dir) || utils.getDirString(inputDir.x, inputDir.y) == utils.getDirString(game.snake.dir.x, game.snake.dir.y)) { //REFAC: refactor getDirStirng to only take dir as argument, and make checkSame function
+                if (utils.checkOpposite(inputDir, game.snake.dir) || utils.checkSame(inputDir, game.snake.dir)) {
                     game.inputBuffer.pop();
                 }
             }
@@ -816,23 +814,26 @@ const utils = {
         return msg;
     },
 
-    // check's if two dir objects are opposite
+    // funcs to check if two dir objects are opposite or same
     checkOpposite(dir1, dir2) {
-        return this.getDirString(dir1.x, dir1.y) == this.getDirString(-dir2.x, -dir2.y);
+        return this.getDirStr(dir1) == this.getDirStr({x: -dir2.x, y: -dir2.y});
+    },
+    checkSame(dir1, dir2) {
+        return this.getDirStr(dir1) == this.getDirStr(this.getDirStr(dir2));
     },
 
     // give the dir name for a dir vector
-    getDirString(dirX, dirY) {
-        if (dirX == 0 && dirY == 1) {
+    getDirStr(dir) {
+        if (dir.x == 0 && dir.y == 1) {
             return "down";
-        } else if (dirX == 0 && dirY == -1) {
+        } else if (dir.x == 0 && dir.y == -1) {
             return "up";
-        } else if (dirX == 1 && dirY == 0) {
+        } else if (dir.x == 1 && dir.y == 0) {
             return "right";
-        } else if (dirX == -1 && dirY == 0) {
+        } else if (dir.x == -1 && dir.y == 0) {
             return "left";
         } else {
-            console.error("Invalid dirX, dirY!", dirX, dirY);
+            console.error("Invalid direction object!", dir);
             return undefined;
         }
     }
