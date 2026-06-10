@@ -459,7 +459,12 @@ class Snake {
 
     checkFruit(game) {
         let [next_x, next_y] = this.nextPos(game);
-        this.growthBuffer += FruitManager.consumeAt(game, next_x, next_y); //REFAC: change to check fruit only return the reqd value and use fruitmanager module to actually dlt, and respawn fruit
+        let del_score = FruitManager.checkAt(game, next_x, next_y);
+        if(del_score != null) {
+            this.growthBuffer += del_score;
+            FruitManager.consumeAt(game, next_x, next_y);
+            FruitManager.spawn(game);
+        }
     }
 }
 
@@ -686,7 +691,7 @@ const Input = {
         if (!inputDir) { return; }
 
         // don't push consecutively same or opposite directions in buffer
-        if (game.inputBuffer.length != game.inputBufferSize) {
+        if (game.inputBuffer.length != CONFIG.GAMEPLAY.INPUT_BUFFER_SIZE) {
             game.inputBuffer.push(inputDir);
             let len = game.inputBuffer.length;
             if (len >= 2) {
@@ -725,6 +730,20 @@ const AudioManager = {
 
 const FruitManager = {
 
+    // returns fruit.score if fruit at given x, y; else returns null
+    checkAt(game, x, y) {
+        if (x >= game.nColumns || x < 0 || y >= game.nRows || y < 0) {
+            console.error("Index out of bounds");
+            return null;
+        } //TODO: add similar exhaustive checks at all places
+        if (game.grid[x][y].length != 0 && game.grid[x][y][0].type == "fruit") { //since only one fruit can be present if there is anything
+            let fruit = game.grid[x][y][0].entity;
+            return fruit.score;
+        } else {
+            return null;
+        }
+    },
+
     // randomize fruit and an empty cell to spawn; update game.food; then call drawFruit
     spawn(game) {
 
@@ -761,20 +780,17 @@ const FruitManager = {
         game.grid[pos_x][pos_y].push(new Cell("fruit", fruits[id])); //REFAC: remove grid logics from everywhere
     },
 
-    // detect and consume fruit at x, y; and spawn new fruit; returns fruit.score if found
+    //consume fruit at x, y; and spawn new fruit
     consumeAt(game, x, y) {
         if (x >= game.nColumns || x < 0 || y >= game.nRows || y < 0) {
             console.error("Index out of bounds");
-            return 0;
         } //TODO: add similar exhaustive checks at all places
         if (game.grid[x][y].length != 0 && game.grid[x][y][0].type == "fruit") { //since only one fruit can be present if there is anything
             let fruit = game.grid[x][y][0].entity;
             fruit.onEat(fruit, game);
             this.deleteFruit(game, x, y);
-            this.spawn(game);
-            return fruit.score;
         } else {
-            return 0;
+            console.error("No Fruit at given x, y !");
         }
     },
 
