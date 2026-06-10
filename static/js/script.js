@@ -917,7 +917,7 @@ function start() {
     for (let el of document.getElementsByClassName("username-value")) {
         el.innerHTML = username;
     }
-    App.user.username = username; //REFAC: there was an initgamestate on startmodal hide, add it somewhere
+    App.user.username = username; 
 
     App.bsmodals.start.hide();
     initGameState();
