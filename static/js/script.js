@@ -107,7 +107,7 @@ class User {
     }
 
     // returns the highscore in all records stored (excludes current ongoing run); defaults to 2
-    highScore(myState) {
+    highScore() {
         return this.records.reduce((maxScore, record) => record.score > maxScore ? record.score : maxScore, 2);
     }
 
@@ -230,11 +230,11 @@ class GameState {
             this.snake.immunityTicks -= 1;
         }
 
-        let beatenHighScore = this.score > App.user.highScore(this);
+        let beatenHighScore = this.score > App.user.highScore();
         this.snake.checkFruit(this);
 
         // check if achieved new high score and display in UI
-        if (!beatenHighScore && this.score > App.user.highScore(this)) {
+        if (!beatenHighScore && this.score > App.user.highScore()) {
             UI.newHighScoreMessage();
         }
 
@@ -575,7 +575,7 @@ const UI = {
             el.innerHTML = game.snake.length;
         }
         for (let el of document.getElementsByClassName("high-score-value")) {
-            el.innerHTML = Math.max(game.score, App.user.highScore(game));
+            el.innerHTML = Math.max(game.score, App.user.highScore());
         }
 
         document.querySelector("#immunity-progress-bar .bar-filled").style.width = `${game.snake.immunityTicks / CONFIG.GAMEPLAY.IMMUNITY_TICKS * 100}%`;
@@ -819,7 +819,7 @@ const utils = {
         return this.getDirStr(dir1) == this.getDirStr({x: -dir2.x, y: -dir2.y});
     },
     checkSame(dir1, dir2) {
-        return this.getDirStr(dir1) == this.getDirStr(this.getDirStr(dir2));
+        return this.getDirStr(dir1) == this.getDirStr(dir2);
     },
 
     // give the dir name for a dir vector
